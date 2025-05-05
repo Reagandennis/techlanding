@@ -1,7 +1,10 @@
+// src/app/layout.tsx
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TechGetAfrica',
-  description: 'Unlock your tech future with world-class accreditation in Africa. TechGetAfrica provides globally recognized certifications and training programs, empowering Africans to launch and advance their careers in the technology sector.',
+  title: "TechGetAfrica",
+  description:
+    "Unlock your tech future with world-class accreditation in Africa. TechGetAfrica provides globally recognized certifications and training programs, empowering Africans to launch and advance their careers in the technology sector.",
 };
 
 export default function RootLayout({
@@ -24,14 +28,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-                <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
-
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          {children}
+          <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

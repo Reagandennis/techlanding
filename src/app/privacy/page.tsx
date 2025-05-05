@@ -198,9 +198,9 @@ export default function PrivacyPolicyPage() {
                   If you have any questions about this Privacy Policy, please contact us:
                 </p>
                 <ul className="text-gray-600 list-disc pl-5 space-y-2">
-                  <li>By email: privacy@techgetafrica.com</li>
+                  <li>By email: support@techgetafrica.com</li>
                   <li>By visiting this page on our website: <Link href="/contact" className="text-red-600 hover:underline">Contact Us</Link></li>
-                  <li>By phone: +234 800 123 4567</li>
+                  <li>By phone: +254 796004050</li>
                 </ul>
               </div>
             </div>

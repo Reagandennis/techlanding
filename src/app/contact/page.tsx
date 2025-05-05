@@ -21,7 +21,7 @@ const contactMethods = [
     name: "Phone Support",
     description: "Call our regional offices",
     icon: <Phone className="h-8 w-8 text-red-600" />,
-    details: "Lagos: +234 800 123 4567\nNairobi: +254 700 987 654\nCape Town: +27 21 123 4567",
+    details: "Lagos: +254 796004050\nNairobi: +254 796004050\nCape Town: +254 796004050",
     action: "View all numbers",
     link: "/contact/numbers"
   },
@@ -39,23 +39,23 @@ const regionalOffices = [
   {
     city: "Lagos",
     country: "Nigeria",
-    address: "12A Marina Road, Lagos Island, Lagos",
-    phone: "+234 800 123 4567",
-    email: "lagos@techgetafrica.com"
+    address: "Vitual Office",
+    phone: "+254 796004050",
+    email: "support@techgetafrica.com"
   },
   {
     city: "Nairobi",
     country: "Kenya",
-    address: "Westlands Business Centre, 3rd Floor, Nairobi",
-    phone: "+254 700 987 654",
-    email: "nairobi@techgetafrica.com"
+    address: "Lower Kabete, 1st Floor, Nairobi",
+    phone: "+254 796004050",
+    email: "support@techgetafrica.com"
   },
   {
     city: "Cape Town",
     country: "South Africa",
-    address: "50 Burg Street, Cape Town City Centre",
-    phone: "+27 21 123 4567",
-    email: "capetown@techgetafrica.com"
+    address: "Vitual Office",
+    phone: "+254 796004050",
+    email: "support@techgetafrica.com"
   }
 ];
 
@@ -176,8 +176,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">General inquiries</h3>
                       <p className="mt-1 text-gray-600">
-                        <Link href="mailto:info@techgetafrica.com" className="text-red-600 hover:underline">
-                          info@techgetafrica.com
+                        <Link href="mailto:suppport@techgetafrica.com" className="text-red-600 hover:underline">
+                          support@techgetafrica.com
                         </Link>
                       </p>
                     </div>

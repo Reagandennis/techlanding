@@ -1,11 +1,11 @@
-// ## Main Homepage Component ##
-// File: app/page.tsx
-// Description: Enhanced landing page for the TechGetAfrica website with improved structure, content, and performance.
-'use client'
+'use client'; // This directive is correct for client components in the App Router
 
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Better image optimization
+// Import Clerk authentication hooks
+import { UserButton, SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
+
 import { ArrowRight, Briefcase, Rocket, Users, Calendar, Award, GraduationCap } from 'lucide-react';
 
 // Import Components
@@ -18,8 +18,10 @@ import TestimonialCard from './componets/TestimonialCard'; // New component for 
 // Types
 import CourseCard, { CourseCardProps } from './componets/CourseCard'; // Type import for course data
 
-
 export default function HomePage() {
+  // Use Clerk's useUser hook instead of Auth0
+  const { isLoaded, isSignedIn, user } = useUser();
+
   // Featured courses data - can be moved to API/CMS later
   const featuredCourses: CourseCardProps[] = [
     {
@@ -53,7 +55,7 @@ export default function HomePage() {
       duration: '4 weeks',
       level: 'Beginner',
       provider: 'Microsoft',
-      imageSrc: '/images/courses/azure-fundamentals.jpg', 
+      imageSrc: '/images/courses/azure-fundamentals.jpg',
       imageAlt: 'Microsoft Azure Fundamentals Certification',
       badges: ['Fast Track', 'Entry Level'],
       href: '/courses'
@@ -103,6 +105,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
       {/* --- Navigation --- */}
+      {/* Consider making your Header/Nav a separate client component */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <nav className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Main navigation">
           <div className="flex-shrink-0">
@@ -110,7 +113,7 @@ export default function HomePage() {
               TechGet<span className="text-black">Africa</span>
             </Link>
           </div>
-          
+
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex space-x-6">
             <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
@@ -118,24 +121,45 @@ export default function HomePage() {
             <Link href="/partners" className="text-gray-700 hover:text-red-600 transition-colors">Partners</Link>
             <Link href="/resources" className="text-gray-700 hover:text-red-600 transition-colors">Resources</Link>
             <Link href="/communities" className="text-gray-700 hover:text-red-600 transition-colors">Community</Link>
+            {/* Add a link to the protected page if the user is signed in */}
+            {isSignedIn && (
+              <Link href="/certifications/all" className="text-gray-700 hover:text-red-600 transition-colors">My Certifications</Link>
+            )}
           </div>
-          
+
           {/* Auth buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/login" className="text-gray-700 hover:text-red-600 transition-colors">
-              Log In
-            </Link>
-            <Link 
-              href="/register" 
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors"
-            >
-              Get Started
-            </Link>
+            {!isLoaded ? (
+              // Show loading state while checking auth status
+              <span>Loading...</span>
+            ) : isSignedIn ? (
+              // If user is signed in, show user info and UserButton
+              <>
+                {/* Display user's full name or username */}
+                <span className="text-gray-700 text-sm">Hello, {user.firstName || user.username}</span>
+                {/* Clerk's UserButton component for user menu */}
+                <UserButton afterSignOutUrl="/" />
+              </>
+            ) : (
+              // If user is not signed in, show Sign In and Sign Up buttons
+              <>
+                <SignInButton mode="modal">
+                  <button className="text-gray-700 hover:text-red-600 transition-colors">
+                    Log In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">
+                    Get Started
+                  </button>
+                </SignUpButton>
+              </>
+            )}
           </div>
-          
+
           {/* Mobile Menu Button */}
           <div className="md:hidden">
-            <button 
+            <button
               className="text-gray-700 hover:text-red-600"
               aria-label="Open menu"
               aria-expanded="false"
@@ -152,7 +176,7 @@ export default function HomePage() {
 
       <main className="flex-grow">
         {/* --- Hero Section --- */}
-        <section 
+        <section
           className="relative bg-white pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8 overflow-hidden"
           aria-labelledby="hero-heading"
         >
@@ -161,7 +185,7 @@ export default function HomePage() {
             <div className="absolute inset-y-0 right-0 w-1/2 bg-gray-50 rounded-l-3xl"></div>
             <div className="absolute bottom-0 right-0 w-1/4 h-1/4 bg-red-50 rounded-tl-3xl"></div>
           </div>
-          
+
           <div className="relative container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <div className="text-center lg:text-left">
@@ -175,7 +199,7 @@ export default function HomePage() {
               <p className="mt-3 max-w-md mx-auto text-lg text-gray-500 sm:text-xl md:mt-5 md:max-w-3xl lg:mx-0">
                 TechGetAfrica provides globally recognized certifications and training programs, empowering Africans to launch and advance their careers in the technology sector.
               </p>
-              
+
               {/* Stats highlight */}
               <div className="mt-8 grid grid-cols-2 gap-4 text-left">
                 <div className="bg-white/80 p-3 rounded-lg shadow-sm">
@@ -187,7 +211,7 @@ export default function HomePage() {
                   <p className="text-sm text-gray-500">African countries served</p>
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start space-y-3 sm:space-y-0 sm:space-x-3">
                 <Button href="/courses" variant="primary">
@@ -198,7 +222,7 @@ export default function HomePage() {
                 </Button>
               </div>
             </div>
-            
+
             {/* Hero Image */}
             <div className="mt-12 lg:mt-0 relative">
               {/* Add next/image for better performance */}
@@ -212,7 +236,7 @@ export default function HomePage() {
                   priority
                 />
               </div>
-              
+
               {/* Floating achievement badge */}
               <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 flex items-center space-x-3">
                 <div className="rounded-full bg-red-100 p-2">
@@ -228,35 +252,35 @@ export default function HomePage() {
         </section>
 
         {/* --- Partners Section --- */}
-        <section 
+        <section
           className="bg-gray-50 py-12 sm:py-16"
           aria-labelledby="partners-heading"
         >
           <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 
-              id="partners-heading" 
+            <h2
+              id="partners-heading"
               className="text-center text-sm font-semibold uppercase text-gray-500 tracking-wider mb-8"
             >
               In Partnership With World Leaders in Technology
             </h2>
-            
+
             {/* Grid for Partner Logos */}
             <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
               {partners.map((partner) => (
-                <Link 
-                  key={partner.name} 
+                <Link
+                  key={partner.name}
                   href={partner.href}
-                  className="transition-transform hover:scale-105"  
+                  className="transition-transform hover:scale-105"
                 >
-                  <PartnerLogo 
-                    src={partner.logoSrc} 
+                  <PartnerLogo
+                    src={partner.logoSrc}
                     fallbackSrc={`https://placehold.co/150x60/cccccc/cccccc?text=${partner.name}`}
-                    alt={`${partner.name} Logo`} 
+                    alt={`${partner.name} Logo`}
                   />
                 </Link>
               ))}
             </div>
-            
+
             <p className="mt-8 text-center text-gray-500 max-w-2xl mx-auto">
               Our accreditation partners offer industry-recognized certifications that are in high demand across Africa and globally, ensuring your skills are validated by the best in the industry.
             </p>
@@ -264,8 +288,8 @@ export default function HomePage() {
         </section>
 
         {/* --- Key Offerings Section --- */}
-        <section 
-          id="programs" 
+        <section
+          id="programs"
           className="bg-white py-16 sm:py-20"
           aria-labelledby="offerings-heading"
         >
@@ -277,7 +301,7 @@ export default function HomePage() {
               description="Choose from a wide range of accreditation paths designed for every stage of your tech journey."
               id="offerings-heading"
             />
-            
+
             {/* Offering Cards Grid */}
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {/* Offering Card 1: Industry Accreditation */}
@@ -308,7 +332,7 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
-              
+
               {/* Offering Card 2: Accelerator Programs */}
               <div className="bg-gray-50 rounded-lg shadow-md p-6 flex flex-col border border-gray-100 hover:border-red-200 transition-all hover:shadow-lg">
                 <div className="flex-shrink-0">
@@ -337,7 +361,7 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
-              
+
               {/* Offering Card 3: Community & Events */}
               <div className="bg-gray-50 rounded-lg shadow-md p-6 flex flex-col border border-gray-100 hover:border-red-200 transition-all hover:shadow-lg">
                 <div className="flex-shrink-0">
@@ -367,7 +391,7 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            
+
             {/* View All Programs button */}
             <div className="mt-12 text-center">
               <Button href="/programs" variant="outline">
@@ -387,15 +411,14 @@ export default function HomePage() {
               id="featured-courses-heading"
               alignment="left"
             />
-            
+
             {/* Course Cards (would use CourseCard component in real implementation) */}
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {featuredCourses.map((course) => (
-                                <CourseCard key={course.id} {...course} />
-
+                <CourseCard key={course.id} {...course} />
               ))}
             </div>
-            
+
             {/* View All Courses button */}
             <div className="mt-12 text-center">
               <Button href="/courses" variant="primary">
@@ -404,7 +427,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-        
+
         {/* --- Testimonials Section (New) --- */}
         <section className="bg-white py-16 sm:py-20" aria-labelledby="testimonials-heading">
           <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -414,7 +437,7 @@ export default function HomePage() {
               description="Join thousands of professionals who have transformed their careers through TechGetAfrica's certification programs."
               id="testimonials-heading"
             />
-            
+
             {/* Stats */}
             <div className="mt-12 grid grid-cols-2 gap-8 md:grid-cols-4">
               {stats.map((stat, index) => (
@@ -424,29 +447,31 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            
+
             {/* Testimonials */}
             <div className="mt-16 grid gap-8 md:grid-cols-2">
               {testimonials.map((testimonial) => (
-                <div 
-                  key={testimonial.id} 
+                <div
+                  key={testimonial.id}
                   className="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-100"
                 >
                   {/* Quote Icon */}
                   <svg className="h-8 w-8 text-red-200 mb-4" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
                     <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
                   </svg>
-                  
+
                   <p className="text-gray-700 italic mb-4">{testimonial.quote}</p>
-                  
+
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden bg-gray-200">
                       {/* Placeholder for testimonial image */}
-                      <Image 
-                        src={`https://placehold.co/100x100/e2e8f0/4a5568?text=${testimonial.author.charAt(0)}`}
+                      {/* Using Next/Image for placeholder as well */}
+                      <Image
+                        src="/images/placeholder-avatar.png" // Path relative to your public directory
                         alt={testimonial.author}
                         width={40}
                         height={40}
+                        className="rounded-full"
                       />
                     </div>
                     <div className="ml-4">
@@ -458,7 +483,7 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            
+
             {/* Read More Stories button */}
             <div className="mt-12 text-center">
               <Button href="/success-stories" variant="outline">
@@ -477,28 +502,28 @@ export default function HomePage() {
             <p className="mt-4 text-lg leading-6 text-red-100">
               Join thousands of African tech professionals who have accelerated their careers through our globally recognized certification programs.
             </p>
-            
+
             {/* CTA Options */}
             <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-              <Button 
-                href="/courses" 
-                variant="secondary" 
+              <Button
+                href="/courses"
+                variant="secondary"
                 className="text-red-700 bg-white hover:bg-red-50"
               >
                 Browse Courses
               </Button>
-              <Button 
-                href="/eligibility-check" 
-                variant="outline" 
+              <Button
+                href="/eligibility-check"
+                variant="outline"
                 className="text-white border-white hover:bg-red-800"
               >
                 Check Your Eligibility
               </Button>
             </div>
-            
+
             {/* Financing note */}
             <p className="mt-6 text-m text-red-100">
-             <b>Flexible financing options and scholarships available.</b>  No upfront payment required.
+              <b>Flexible financing options and scholarships available.</b>  No upfront payment required.
             </p>
           </div>
         </section>
