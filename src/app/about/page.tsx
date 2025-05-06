@@ -7,6 +7,7 @@ import { Target, Users, Globe, Award, Rocket, Heart, MapPin } from 'lucide-react
 import Button from '../componets/Button';
 import SectionHeading from '../componets/SectionHeading';
 import Footer from '../componets/Footer';
+import Navbar from '../componets/Navbar';
 
 const missionPoints = [
   {
@@ -139,30 +140,7 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-red-600">
-              TechGet<span className="text-black">Africa</span>
-            </Link>
-          </div>
-          
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex space-x-6">
-            <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
-            <Link href="/programs" className="text-gray-700 hover:text-red-600 transition-colors">Programs</Link>
-            <Link href="/partners" className="text-gray-700 hover:text-red-600 transition-colors">Partners</Link>
-            <Link href="/resources" className="text-gray-700 hover:text-red-600 transition-colors">Resources</Link>
-            <Link href="/communities" className="text-gray-700 hover:text-red-600 transition-colors">Community</Link>
-          </div>
-
-          {/* Auth buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/login" className="text-gray-700 hover:text-red-600 transition-colors">Log In</Link>
-            <Link href="/register" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">
-              Get Started
-            </Link>
-          </div>
-        </nav>
+      <Navbar />
       </header>
 
       <main className="flex-grow">

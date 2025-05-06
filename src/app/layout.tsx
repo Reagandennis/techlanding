@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
+import { UserProvider } from "@auth0/nextjs-auth0/client";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ClerkProvider>
           {children}
           <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
+          </ClerkProvider>
         </body>
       </html>
     </ClerkProvider>
