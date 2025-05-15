@@ -5,6 +5,10 @@ const nextConfig = {
       ignoreDuringBuilds: true,
     },
     
+    // URL normalization options (moved from experimental)
+    skipTrailingSlashRedirect: true,
+    skipMiddlewareUrlNormalize: true,
+    
     // Disable TypeScript type checking during build
     typescript: {
       ignoreBuildErrors: true,
@@ -34,9 +38,7 @@ const nextConfig = {
     
     // Skip failing page builds
     experimental: {
-      skipTrailingSlashRedirect: true,
-      skipMiddlewareUrlNormalize: true,
-      fallbackNodePolyfills: false
+      // No experimental features needed
     },
     
     // Add any specific page exclusions
