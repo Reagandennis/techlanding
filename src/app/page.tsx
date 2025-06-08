@@ -154,7 +154,7 @@ export default function HomePage() {
                 <Button href="/courses" variant="primary">
                   Explore Courses
                 </Button>
-                <Button href="/courses" variant="secondary">
+                <Button href="/eligibility-check" variant="secondary">
                   Check Eligibility
                 </Button>
               </div>
@@ -452,7 +452,7 @@ export default function HomePage() {
               <Button
                 href="/eligibility-check"
                 variant="outline"
-                className="text-white border-white hover:bg-red-800"
+                className="text-red-700 bg-white hover:bg-red-50"
               >
                 Check Your Eligibility
               </Button>

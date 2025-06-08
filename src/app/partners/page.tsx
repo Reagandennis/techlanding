@@ -220,7 +220,7 @@ export default function PartnersPage() {
               </p>
               
               <div className="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-                <Button href="/partner-with-us" variant="primary">
+                <Button href="/partners/join" variant="primary">
                   Become a Partner
                 </Button>
                 <Button href="/programs" variant="outline">

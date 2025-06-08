@@ -3,38 +3,47 @@
 
     import React from 'react';
     import Link from 'next/link';
+    import { cn } from '@/lib/utils';
 
     // Define the props for the Button component
-    interface ButtonProps {
-      href: string; // URL the button links to
-      children: React.ReactNode; // Content inside the button (text, icons, etc.)
-      variant?: 'primary' | 'secondary' | 'outline' | 'link'; // Style variations
-      className?: string; // Optional additional CSS classes
-      // Add other props like onClick if needed for non-link buttons
+    interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+      variant?: 'primary' | 'secondary' | 'outline';
+      href?: string;
+      className?: string;
+      children: React.ReactNode;
     }
 
-    const Button: React.FC<ButtonProps> = ({ href, children, variant = 'primary', className = '' }) => {
-      // Base styles common to all buttons
-      const baseStyle = "inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ease-in-out disabled:opacity-50";
-
-      // Styles specific to each variant
-      const variants = {
-        primary: "text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 border-red-600",
-        secondary: "text-red-700 bg-red-100 hover:bg-red-200 focus:ring-red-500 border-red-100",
-        outline: "text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:ring-red-500",
-        link: "text-red-600 hover:text-red-700 focus:ring-red-500 shadow-none border-none p-0 bg-transparent", // Example link style
+    export default function Button({
+      variant = 'primary',
+      href,
+      className,
+      children,
+      ...props
+    }: ButtonProps) {
+      const baseStyles = 'inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200';
+      
+      const variantStyles = {
+        primary: 'border-transparent text-white bg-red-600 hover:bg-red-700 focus:ring-red-500',
+        secondary: 'border-transparent text-red-700 bg-red-100 hover:bg-red-200 focus:ring-red-500',
+        outline: 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-red-500',
       };
 
-      // Combine base styles, variant styles, and any additional classes
-      const combinedClassName = `${baseStyle} ${variants[variant]} ${className}`;
+      const combinedClassName = cn(baseStyles, variantStyles[variant], className);
 
-      // Render a Next.js Link component styled as a button
+      // If href is provided, render a Link component
+      if (href) {
+        return (
+          <Link href={href} className={combinedClassName}>
+            {children}
+          </Link>
+        );
+      }
+
+      // Otherwise, render a button
       return (
-        <Link href={href} className={combinedClassName}>
+        <button className={combinedClassName} {...props}>
           {children}
-        </Link>
+        </button>
       );
-    };
-
-    export default Button;
+    }
     
