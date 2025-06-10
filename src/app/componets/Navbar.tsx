@@ -2,9 +2,16 @@
 
 import Link from 'next/link'
 import { useUser, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs'
+import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 
 export default function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -31,8 +38,10 @@ export default function Navbar() {
         {/* Auth buttons */}
         <div className="hidden md:flex items-center space-x-4">
           {!isLoaded ? (
-            // Show loading state while checking auth status
-            <span>Loading...</span>
+            <div className="animate-pulse flex space-x-4">
+              <div className="h-8 w-20 bg-gray-200 rounded"></div>
+              <div className="h-8 w-20 bg-gray-200 rounded"></div>
+            </div>
           ) : isSignedIn ? (
             // If user is signed in, show user info and UserButton
             <>
@@ -61,18 +70,76 @@ export default function Navbar() {
         {/* Mobile Menu Button */}
         <div className="md:hidden">
           <button
-            className="text-gray-700 hover:text-red-600"
-            aria-label="Open menu"
-            aria-expanded="false"
-            onClick={() => {/* Add mobile menu state toggle logic */}}
+            className="text-gray-700 hover:text-red-600 p-2"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
+            onClick={toggleMobileMenu}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
           {/* Mobile Menu would be implemented as a client component */}
         </div>
       </nav>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-white border-t">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <Link href="/accreditation" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+              Accreditation
+            </Link>
+            <Link href="/programs" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+              Programs
+            </Link>
+            <Link href="/partners" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+              Partners
+            </Link>
+            <Link href="/resources" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+              Resources
+            </Link>
+            <Link href="/communities" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+              Community
+            </Link>
+            {isSignedIn && (
+              <Link href="/certifications/all" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+                My Certifications
+              </Link>
+            )}
+            <div className="border-t pt-2 mt-2">
+              {!isLoaded ? (
+                <div className="animate-pulse space-y-2">
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
+              ) : isSignedIn ? (
+                <div className="px-3 py-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-700">Hello, {user.firstName || user.username}</span>
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2 px-3">
+                  <SignInButton mode="modal">
+                    <button className="w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
+                      Log In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors">
+                      Get Started
+                    </button>
+                  </SignUpButton>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   )
 }

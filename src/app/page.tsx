@@ -20,8 +20,24 @@ import CourseCard, { CourseCardProps } from './componets/CourseCard'; // Type im
 import Navbar from './componets/Navbar';
 
 export default function HomePage() {
-  // Use Clerk's useUser hook instead of Auth0
   const { isLoaded, isSignedIn, user } = useUser();
+
+  // Show loading state while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col min-h-screen font-sans bg-white">
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <Navbar />
+        </header>
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Featured courses data - can be moved to API/CMS later
   const featuredCourses: CourseCardProps[] = [
