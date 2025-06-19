@@ -6,6 +6,7 @@ import "./globals.css";
 import { defaultMetadata } from "./metadata";
 import { ClerkProvider } from "@clerk/nextjs";
 import Script from "next/script";
+import { verifyClerkConfig } from "../utils/clerk-config";
 
 const inter = Inter({ subsets: ["latin"] });
 

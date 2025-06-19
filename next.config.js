@@ -21,7 +21,7 @@ const nextConfig = {
       pagesBufferLength: 2,
     },
     
-    // Existing CORS configuration
+    // Headers configuration including CORS and security
     async headers() {
       return [
         {
@@ -33,6 +33,32 @@ const nextConfig = {
             { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" },
           ],
         },
+        {
+          source: "/:path*",
+          headers: [
+            {
+              key: 'X-Frame-Options',
+              value: 'DENY',
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff',
+            },
+            {
+              key: 'Referrer-Policy',
+              value: 'origin-when-cross-origin',
+            },
+          ],
+        },
+      ];
+    },
+    
+    // Redirect configuration for domain consistency
+    async redirects() {
+      return [
+        // These redirects ensure www.techgetafrica.com works with Clerk
+        // In production, you might want to redirect www to non-www or vice versa
+        // For now, we'll allow both to work
       ];
     },
     

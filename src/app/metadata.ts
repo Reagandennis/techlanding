@@ -78,4 +78,8 @@ export const defaultMetadata: Metadata = {
       'fr-FR': 'https://techgetafrica.com/fr',
     },
   },
+  other: {
+    // Ensure both www and non-www are treated as canonical
+    'canonical': 'https://techgetafrica.com',
+  },
 }; 
