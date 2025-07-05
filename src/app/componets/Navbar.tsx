@@ -1,4 +1,5 @@
 
+// Navbar component for TechGetAfrica
 'use client'
 
 import Link from 'next/link'
@@ -31,12 +32,10 @@ export default function Navbar() {
           <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
 
           <div 
-            className="relative"
-            onMouseEnter={() => setIsDropdownOpen(true)}
-            onMouseLeave={() => setIsDropdownOpen(false)}
-          >
+            className="relative">
             <button
               className="flex items-center text-gray-700 hover:text-red-600 transition-colors"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               More <ChevronDown className="h-5 w-5 ml-1" />
             </button>
