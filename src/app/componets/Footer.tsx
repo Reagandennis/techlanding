@@ -4,7 +4,7 @@
 'use client'
 import React from 'react'; // Import React
 import Link from 'next/link'; // Import Next.js Link
-import { Briefcase, Rocket, BookOpen, Calendar, Users, LifeBuoy, Handshake, LucideProps } from 'lucide-react'; // Icons needed for Footer
+import { Briefcase, Rocket, BookOpen, Calendar, Users, LifeBuoy, Handshake, LucideProps, Code } from 'lucide-react'; // Icons needed for Footer
 import { ForwardRefExoticComponent, RefAttributes } from 'react'; // Import types for icon component
 
 // Define the type for a single footer link item
@@ -33,6 +33,9 @@ const Footer = () => {
       links: [
         { name: 'Accreditation', href: '/accreditation', icon: Briefcase },
         { name: 'Accelerator Program', href: '/programs/accelarator', icon: Rocket },
+        { name: 'Consulting', href: '/consulting', icon: Handshake },
+        { name: 'Development', href: '/development', icon: Code },
+        { name: 'Recruitment Agency Platform', href: '/recruitment', icon: Briefcase },
         { name: 'Resources', href: '/resources', icon: BookOpen },
       ],
     },

@@ -1,13 +1,15 @@
+
 'use client'
 
 import Link from 'next/link'
 import { useUser, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs'
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 
 export default function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -23,13 +25,34 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden md:flex space-x-6">
-          <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
+        <div className="hidden md:flex items-center space-x-6">
           <Link href="/programs" className="text-gray-700 hover:text-red-600 transition-colors">Programs</Link>
-          <Link href="/partners" className="text-gray-700 hover:text-red-600 transition-colors">Partners</Link>
-          <Link href="/resources" className="text-gray-700 hover:text-red-600 transition-colors">Resources</Link>
-          <Link href="/communities" className="text-gray-700 hover:text-red-600 transition-colors">Community</Link>
-          {/* Add a link to the protected page if the user is signed in */}
+          <Link href="/consulting" className="text-gray-700 hover:text-red-600 transition-colors">Consulting</Link>
+          <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
+
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <button
+              className="flex items-center text-gray-700 hover:text-red-600 transition-colors"
+            >
+              More <ChevronDown className="h-5 w-5 ml-1" />
+            </button>
+            {isDropdownOpen && (
+              <div
+                className="absolute top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20"
+              >
+                <Link href="/partners" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Partners</Link>
+                <Link href="/resources" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Resources</Link>
+                <Link href="/communities" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Community</Link>
+                <Link href="/development" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Development</Link>
+                <Link href="/recruitment" className="block px-4 py-2 text-gray-700 hover:bg-gray-100">Recruitment Agency Platform</Link>
+              </div>
+            )}
+          </div>
+
           {isSignedIn && (
             <Link href="/certifications/all" className="text-gray-700 hover:text-red-600 transition-colors">My Certifications</Link>
           )}
@@ -43,25 +66,17 @@ export default function Navbar() {
               <div className="h-8 w-20 bg-gray-200 rounded"></div>
             </div>
           ) : isSignedIn ? (
-            // If user is signed in, show user info and UserButton
             <>
-              {/* Display user's full name or username */}
               <span className="text-gray-700 text-sm">Hello, {user.firstName || user.username}</span>
-              {/* Clerk's UserButton component for user menu */}
               <UserButton afterSignOutUrl="/" />
             </>
           ) : (
-            // If user is not signed in, show Sign In and Sign Up buttons
             <>
               <SignInButton mode="modal">
-                <button className="text-gray-700 hover:text-red-600 transition-colors">
-                  Log In
-                </button>
+                <button className="text-gray-700 hover:text-red-600 transition-colors">Log In</button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">
-                  Get Started
-                </button>
+                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors">Get Started</button>
               </SignUpButton>
             </>
           )}
@@ -71,17 +86,12 @@ export default function Navbar() {
         <div className="md:hidden">
           <button
             className="text-gray-700 hover:text-red-600 p-2"
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMobileMenuOpen}
             onClick={toggleMobileMenu}
           >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
-          {/* Mobile Menu would be implemented as a client component */}
         </div>
       </nav>
 
@@ -89,25 +99,16 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t">
           <div className="px-2 pt-2 pb-3 space-y-1">
-            <Link href="/accreditation" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-              Accreditation
-            </Link>
-            <Link href="/programs" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-              Programs
-            </Link>
-            <Link href="/partners" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-              Partners
-            </Link>
-            <Link href="/resources" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-              Resources
-            </Link>
-            <Link href="/communities" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-              Community
-            </Link>
+            <Link href="/programs" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Programs</Link>
+            <Link href="/consulting" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Consulting</Link>
+            <Link href="/accreditation" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Accreditation</Link>
+            <Link href="/partners" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Partners</Link>
+            <Link href="/resources" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Resources</Link>
+            <Link href="/communities" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Community</Link>
+            <Link href="/development" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Development</Link>
+            <Link href="/recruitment" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Recruitment Agency Platform</Link>
             {isSignedIn && (
-              <Link href="/certifications/all" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-                My Certifications
-              </Link>
+              <Link href="/certifications/all" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">My Certifications</Link>
             )}
             <div className="border-t pt-2 mt-2">
               {!isLoaded ? (
@@ -125,14 +126,10 @@ export default function Navbar() {
               ) : (
                 <div className="space-y-2 px-3">
                   <SignInButton mode="modal">
-                    <button className="w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">
-                      Log In
-                    </button>
+                    <button className="w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Log In</button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors">
-                      Get Started
-                    </button>
+                    <button className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors">Get Started</button>
                   </SignUpButton>
                 </div>
               )}

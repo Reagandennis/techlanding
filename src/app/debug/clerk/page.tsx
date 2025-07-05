@@ -5,6 +5,7 @@ import { useAuth, useUser } from '@clerk/nextjs';
 import { verifyClerkConfig, clearClerkSession } from '../../utils/clerk-config';
 import { getDomainInfo, validateClerkDomain } from '../../utils/domain-config';
 import { validateEnvironmentKeys, getClerkKeys } from '../../utils/clerk-env-config';
+import { validateCurrentDomain, generateTestUrls, testDomainVariants } from '../../utils/domain-test';
 
 export default function ClerkDebugPage() {
   const { isLoaded, isSignedIn, userId } = useAuth();
@@ -191,6 +192,85 @@ export default function ClerkDebugPage() {
             <p><strong>JWKS URL:</strong> https://clerk.techgetafrica.com/.well-known/jwks.json</p>
             <p><strong>Domain Coverage:</strong> Both techgetafrica.com and www.techgetafrica.com</p>
           </div>
+        </div>
+
+        {/* Domain Testing */}
+        <div className="bg-white shadow rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Domain Testing & URLs</h2>
+          {(() => {
+            const domainTests = testDomainVariants();
+            const testUrls = generateTestUrls();
+            
+            return (
+              <div className="space-y-6">
+                {/* Current Domain Status */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3">Current Domain Status</h3>
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <p><strong>Host:</strong> {domainTests.currentHost}</p>
+                    <p><strong>Environment:</strong> {domainTests.currentTest.environment}</p>
+                    <p><strong>Status:</strong> {domainTests.currentTest.status}</p>
+                    <p><strong>Expected Keys:</strong> {domainTests.currentTest.clerkExpected}</p>
+                  </div>
+                </div>
+                
+                {/* Test URLs */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3">Test URLs for Both Domains</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Development (localhost)</h4>
+                      <div className="space-y-1">
+                        <a href={testUrls.development} target="_blank" 
+                           className="block text-sm text-blue-600 hover:text-blue-800 underline">
+                          🏠 Home: {testUrls.development}
+                        </a>
+                        <a href={testUrls.debug.local} target="_blank" 
+                           className="block text-sm text-blue-600 hover:text-blue-800 underline">
+                          🔍 Debug: {testUrls.debug.local}
+                        </a>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Production Domains</h4>
+                      <div className="space-y-1">
+                        <a href={testUrls.production.primary} target="_blank" 
+                           className="block text-sm text-green-600 hover:text-green-800 underline">
+                          🌐 Primary: {testUrls.production.primary}
+                        </a>
+                        <a href={testUrls.production.www} target="_blank" 
+                           className="block text-sm text-green-600 hover:text-green-800 underline">
+                          🌐 WWW: {testUrls.production.www}
+                        </a>
+                        <a href={testUrls.debug.prod} target="_blank" 
+                           className="block text-sm text-green-600 hover:text-green-800 underline">
+                          🔍 Debug (Primary): {testUrls.debug.prod}
+                        </a>
+                        <a href={testUrls.debug.www} target="_blank" 
+                           className="block text-sm text-green-600 hover:text-green-800 underline">
+                          🔍 Debug (WWW): {testUrls.debug.www}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Browser Extension Warning */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <h4 className="font-medium text-yellow-800 mb-2">📢 About Browser Extension Warnings</h4>
+                  <p className="text-sm text-yellow-700 mb-2">
+                    If you see React Router warnings in the console, they're from browser extensions, not your app.
+                  </p>
+                  <ul className="text-xs text-yellow-600 space-y-1 ml-4 list-disc">
+                    <li>"v7_startTransition" and "v7_relativeSplatPath" warnings are from extensions</li>
+                    <li>Your Next.js app uses its own routing system, not React Router</li>
+                    <li>These warnings don't affect your application functionality</li>
+                    <li>You can safely ignore them or disable the browser extension</li>
+                  </ul>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Actions */}
