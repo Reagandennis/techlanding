@@ -3,8 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { defaultMetadata } from "./metadata";
-import ClerkLayoutWrapper from "./ClerkLayoutWrapper";
+import AuthProvider from "./components/AuthProvider";
 import Script from "next/script";
+import ClerkLayoutWrapper from "./ClerkLayoutWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
