@@ -9,15 +9,15 @@ import { UserButton, SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
 import { ArrowRight, Briefcase, Rocket, Users, Calendar, Award, GraduationCap } from 'lucide-react';
 
 // Import Components
-import PartnerLogo from './componets/PartnerLogo';
-import Footer from './componets/Footer';
-import Button from './componets/Button'; // Moved to separate component
-import SectionHeading from './componets/SectionHeading'; // New component for consistent section headers
-import TestimonialCard from './componets/TestimonialCard'; // New component for testimonials
+import PartnerLogo from '../shared/components/common/PartnerLogo';
+import Footer from '../shared/components/layout/Footer';
+import Button from '../shared/components/ui/Button';
+import SectionHeading from '../shared/components/common/SectionHeading';
+import TestimonialCard from '../shared/components/common/TestimonialCard';
 
 // Types
-import CourseCard, { CourseCardProps } from './componets/CourseCard'; // Type import for course data
-import Navbar from './componets/Navbar';
+import CourseCard, { CourseCardProps } from '../features/education/components/CourseCard';
+import Navbar from '../shared/components/layout/Navbar';
 
 export default function HomePage() {
   const { isLoaded, isSignedIn, user } = useUser();

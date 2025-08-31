@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { defaultMetadata } from "./metadata";
-import AuthProvider from "./components/AuthProvider";
+import AuthProvider from "../shared/components/auth/AuthProvider";
 import Script from "next/script";
 import ClerkLayoutWrapper from "./ClerkLayoutWrapper";
+import { BusinessVerticalProvider } from "../shared/context/BusinessVerticalContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -54,7 +55,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ClerkLayoutWrapper>
-          {children}
+          <BusinessVerticalProvider>
+            {children}
+          </BusinessVerticalProvider>
         </ClerkLayoutWrapper>
 
         <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
