@@ -1,4 +1,14 @@
+# *
 User-agent: *
 Allow: /
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /api/
+Disallow: /(root)/
 
+# Host
+Host: https://techgetafrica.com
+
+# Sitemaps
 Sitemap: https://techgetafrica.com/sitemap.xml
+Sitemap: https://techgetafrica.com/server-sitemap.xml

@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-<sitemap><loc>https://techgetafrica.com/sitemap-0.xml</loc></sitemap>
-<sitemap><loc>https://techgetafrica.com/server-sitemap.xml</loc></sitemap>
-</sitemapindex>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://techgetafrica.com/robots.txt</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/sitemap.xml</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/about</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/accreditation</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/certifications</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/careers</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/community-tour</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/admin</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/certifications/all</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/communities</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/events</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/contact</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/instructor</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/lms/admin</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/lms/instructor</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/partners/join</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/lms/student</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/eligibility-check</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/privacy</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/partners</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/apply</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/profile</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/programs/accelarator</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/recruitment</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/programs</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/support</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/terms</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/blog</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/resources</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/webinars</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/student</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/consulting</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/development</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/register</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://techgetafrica.com/courses</loc><lastmod>2025-09-01T17:10:03.462Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>

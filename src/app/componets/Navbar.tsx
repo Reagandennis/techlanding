@@ -5,12 +5,15 @@
 import Link from 'next/link'
 import { useUser, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs'
 import { useState } from 'react'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, GraduationCap } from 'lucide-react'
+import { useUserRole } from '@/hooks/useUserRole'
 
 export default function Navbar() {
   const { isLoaded, isSignedIn, user } = useUser()
+  const { canAccessStudent, canAccessInstructor, canAccessAdmin } = useUserRole()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isLMSDropdownOpen, setIsLMSDropdownOpen] = useState(false)
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -51,6 +54,50 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* LMS Navigation - Only show if user has access */}
+          {isSignedIn && (canAccessStudent || canAccessInstructor || canAccessAdmin) && (
+            <div className="relative">
+              <button
+                className="flex items-center text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsLMSDropdownOpen(!isLMSDropdownOpen)}
+              >
+                <GraduationCap className="h-5 w-5 mr-1" />
+                LMS <ChevronDown className="h-4 w-4 ml-1" />
+              </button>
+              {isLMSDropdownOpen && (
+                <div className="absolute top-full mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+                  {canAccessStudent && (
+                    <Link
+                      href="/lms/student"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsLMSDropdownOpen(false)}
+                    >
+                      Student Dashboard
+                    </Link>
+                  )}
+                  {canAccessInstructor && (
+                    <Link
+                      href="/lms/instructor"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsLMSDropdownOpen(false)}
+                    >
+                      Instructor Dashboard
+                    </Link>
+                  )}
+                  {canAccessAdmin && (
+                    <Link
+                      href="/lms/admin"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsLMSDropdownOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {isSignedIn && (
             <Link href="/certifications/all" className="text-gray-700 hover:text-red-600 transition-colors">My Certifications</Link>
@@ -106,6 +153,22 @@ export default function Navbar() {
             <Link href="/communities" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Community</Link>
             <Link href="/development" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Development</Link>
             <Link href="/recruitment" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Recruitment Agency Platform</Link>
+            {/* LMS Mobile Navigation */}
+            {isSignedIn && (canAccessStudent || canAccessInstructor || canAccessAdmin) && (
+              <div className="border-t pt-2 mt-2">
+                <p className="px-3 py-1 text-sm font-medium text-gray-500">Learning Management</p>
+                {canAccessStudent && (
+                  <Link href="/lms/student" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Student Dashboard</Link>
+                )}
+                {canAccessInstructor && (
+                  <Link href="/lms/instructor" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Instructor Dashboard</Link>
+                )}
+                {canAccessAdmin && (
+                  <Link href="/lms/admin" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Admin Dashboard</Link>
+                )}
+              </div>
+            )}
+            
             {isSignedIn && (
               <Link href="/certifications/all" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">My Certifications</Link>
             )}
