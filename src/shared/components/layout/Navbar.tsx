@@ -110,9 +110,31 @@ export default function Navbar({ vertical }: NavbarProps) {
 
           {/* Authenticated User Links */}
           {isSignedIn && (
-            <Link href="/certifications/all" className="text-gray-700 hover:text-red-600 transition-colors">
-              My Certifications
-            </Link>
+            <>
+              <Link href="/dashboard" className="text-gray-700 hover:text-red-600 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/courses" className="text-gray-700 hover:text-red-600 transition-colors">
+                Courses
+              </Link>
+              <Link href="/achievements" className="text-gray-700 hover:text-red-600 transition-colors">
+                Achievements
+              </Link>
+              {/* Role-based links - will be populated based on user role */}
+              <div id="role-based-nav" className="hidden">
+                {/* Instructor links */}
+                <Link href="/instructor/dashboard" className="text-gray-700 hover:text-red-600 transition-colors">
+                  Instructor
+                </Link>
+                {/* Admin links */}
+                <Link href="/admin/dashboard" className="text-gray-700 hover:text-red-600 transition-colors">
+                  Admin
+                </Link>
+              </div>
+              <Link href="/certifications/all" className="text-gray-700 hover:text-red-600 transition-colors">
+                My Certifications
+              </Link>
+            </>
           )}
         </div>
 
@@ -195,13 +217,29 @@ export default function Navbar({ vertical }: NavbarProps) {
 
             {/* Authenticated User Links */}
             {isSignedIn && (
-              <Link
-                href="/certifications/all"
-                className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                My Certifications
-              </Link>
+              <>
+                <Link
+                  href="/dashboard"
+                  className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/courses"
+                  className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Courses
+                </Link>
+                <Link
+                  href="/certifications/all"
+                  className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Certifications
+                </Link>
+              </>
             )}
 
             {/* Auth Section */}

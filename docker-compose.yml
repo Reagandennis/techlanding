@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: techlanding_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: techlanding_lms
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - technet
+
+  # Optional: PgAdmin for database management (uncomment if needed)
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: techlanding_pgadmin
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@techlanding.com
+  #     PGADMIN_DEFAULT_PASSWORD: adminpass123
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #     - technet
+  #   depends_on:
+  #     - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  technet:
+    driver: bridge

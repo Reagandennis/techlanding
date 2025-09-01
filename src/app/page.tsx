@@ -1,12 +1,33 @@
 'use client'; // This directive is correct for client components in the App Router
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image'; // Better image optimization
 // Import Clerk authentication hooks
 import { UserButton, SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
 
 import { ArrowRight, Briefcase, Rocket, Users, Calendar, Award, GraduationCap } from 'lucide-react';
+
+interface LMSCourse {
+  id: string;
+  title: string;
+  description: string;
+  thumbnail?: string;
+  level: string;
+  duration: number; // in hours
+  instructor: {
+    name: string;
+  };
+  categories: Array<{
+    category: {
+      name: string;
+    };
+  }>;
+  _count: {
+    lessons: number;
+    enrollments: number;
+  };
+}
 
 // Import Components
 import PartnerLogo from '../shared/components/common/PartnerLogo';
@@ -21,26 +42,11 @@ import Navbar from '../shared/components/layout/Navbar';
 
 export default function HomePage() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const [featuredCourses, setFeaturedCourses] = useState<CourseCardProps[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
-  // Show loading state while Clerk is initializing
-  if (!isLoaded) {
-    return (
-      <div className="flex flex-col min-h-screen font-sans bg-white">
-        <header className="bg-white shadow-sm sticky top-0 z-50">
-          <Navbar />
-        </header>
-        <main className="flex-grow flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // Featured courses data - can be moved to API/CMS later
-  const featuredCourses: CourseCardProps[] = [
+  // Static fallback courses
+  const getStaticFeaturedCourses = (): CourseCardProps[] => [
     {
       id: 'aws-cloud-practitioner',
       title: 'AWS Certified Cloud Practitioner',
@@ -78,6 +84,66 @@ export default function HomePage() {
       href: '/courses'
     },
   ];
+
+  // Fetch featured courses from LMS
+  useEffect(() => {
+    const fetchFeaturedCourses = async () => {
+      try {
+        const response = await fetch('/api/courses?limit=3&featured=true');
+        if (response.ok) {
+          const data = await response.json();
+          const lmsCourses: LMSCourse[] = data.courses || [];
+          
+          // Transform LMS courses to CourseCard format
+          const transformedCourses: CourseCardProps[] = lmsCourses.map(course => ({
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            duration: `${course.duration} hours`,
+            level: course.level,
+            provider: course.instructor.name,
+            imageSrc: course.thumbnail || '/images/courses/default-course.jpg',
+            imageAlt: `${course.title} Course`,
+            badges: [
+              course.level,
+              ...(course.categories.map(c => c.category.name).slice(0, 1))
+            ],
+            href: `/courses/${course.id}`
+          }));
+          
+          setFeaturedCourses(transformedCourses);
+        } else {
+          // Fallback to static data if API fails
+          setFeaturedCourses(getStaticFeaturedCourses());
+        }
+      } catch (error) {
+        console.error('Failed to fetch featured courses:', error);
+        // Fallback to static data
+        setFeaturedCourses(getStaticFeaturedCourses());
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+
+    fetchFeaturedCourses();
+  }, []);
+
+  // Show loading state while Clerk is initializing
+  if (!isLoaded) {
+    return (
+      <div className="flex flex-col min-h-screen font-sans bg-white">
+        <header className="bg-white shadow-sm sticky top-0 z-50">
+          <Navbar />
+        </header>
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Partner logos - can be loaded from API/CMS later
   const partners = [
@@ -365,11 +431,26 @@ export default function HomePage() {
               alignment="left"
             />
 
-            {/* Course Cards (would use CourseCard component in real implementation) */}
+            {/* Course Cards */}
             <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {featuredCourses.map((course) => (
-                <CourseCard key={course.id} {...course} />
-              ))}
+              {isLoadingCourses ? (
+                // Loading skeleton for course cards
+                [1, 2, 3].map(i => (
+                  <div key={i} className="bg-white rounded-lg shadow animate-pulse">
+                    <div className="h-48 bg-gray-200 rounded-t-lg"></div>
+                    <div className="p-6">
+                      <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+                      <div className="h-8 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                featuredCourses.map((course) => (
+                  <CourseCard key={course.id} {...course} />
+                ))
+              )}
             </div>
 
             {/* View All Courses button */}

@@ -91,7 +91,26 @@ const nextConfig = {
     
     // Image optimization
     images: {
-      domains: ['placehold.co'],
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'placehold.co',
+          port: '',
+          pathname: '/**',
+        },
+        {
+          protocol: 'https',
+          hostname: 'via.placeholder.com',
+          port: '',
+          pathname: '/**',
+        },
+        {
+          protocol: 'https',
+          hostname: 'images.unsplash.com',
+          port: '',
+          pathname: '/**',
+        }
+      ],
       formats: ['image/webp', 'image/avif'],
     },
     
