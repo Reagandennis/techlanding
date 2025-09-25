@@ -2,16 +2,14 @@
 
 import Link from 'next/link';
 import { Home, Search, ArrowLeft, BookOpen, Users, Mail } from 'lucide-react';
-import Navbar from './componets/Navbar';
-import Footer from './componets/Footer';
-import Button from './componets/Button';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import Button from '@/components/Button';
 
 export default function NotFound() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <Navbar />
-      </header>
+      
 
       <main className="flex-grow">
         {/* 404 Hero Section */}

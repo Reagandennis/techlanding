@@ -3,6 +3,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Award, Rocket, Users } from 'lucide-react';
 
+import Button from '@/components/Button';
+import SectionHeading from '@/components/SectionHeading';
+import PartnerLogo from '@/components/PartnerLogo';
+import CourseCard from '@/components/CourseCard';
+
+
 // Interface for featured courses data
 interface CourseCardProps {
   id: string;
@@ -16,111 +22,6 @@ interface CourseCardProps {
   badges: string[];
   href: string;
 }
-
-// Simple Button component inline to avoid import issues
-const Button = ({ href, variant = 'primary', className = '', children }: {
-  href: string;
-  variant?: 'primary' | 'secondary' | 'outline';
-  className?: string;
-  children: React.ReactNode;
-}) => {
-  const baseStyles = 'inline-flex items-center px-6 py-3 text-base font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
-  const variants = {
-    primary: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
-    outline: 'border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white focus:ring-red-500'
-  };
-  
-  return (
-    <Link href={href} className={`${baseStyles} ${variants[variant]} ${className}`}>
-      {children}
-    </Link>
-  );
-};
-
-// Simple SectionHeading component
-const SectionHeading = ({ eyebrow, title, description, id, alignment = 'center' }: {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-  id?: string;
-  alignment?: 'left' | 'center';
-}) => {
-  const alignClasses = alignment === 'center' ? 'text-center' : 'text-left';
-  
-  return (
-    <div className={alignClasses}>
-      {eyebrow && (
-        <p className="text-sm font-semibold text-red-600 tracking-wider uppercase mb-2">
-          {eyebrow}
-        </p>
-      )}
-      <h2 id={id} className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-        {title}
-      </h2>
-      {description && (
-        <p className="mt-4 text-xl text-gray-500 max-w-3xl mx-auto">
-          {description}
-        </p>
-      )}
-    </div>
-  );
-};
-
-// Simple PartnerLogo component
-const PartnerLogo = ({ src, fallbackSrc, alt }: {
-  src: string;
-  fallbackSrc: string;
-  alt: string;
-}) => {
-  return (
-    <div className="flex items-center justify-center h-16 w-full bg-white rounded-lg p-4 hover:shadow-sm transition-shadow">
-      <Image
-        src={fallbackSrc} // Using fallback for now to avoid missing image issues
-        alt={alt}
-        width={120}
-        height={60}
-        className="max-h-10 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-      />
-    </div>
-  );
-};
-
-// Simple CourseCard component
-const CourseCard = ({ title, description, duration, level, provider, badges, href }: CourseCardProps) => {
-  return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-bold text-red-700">{provider}</div>
-          <div className="text-sm text-red-600 mt-1">{level}</div>
-        </div>
-      </div>
-      
-      <div className="p-6">
-        <div className="flex flex-wrap gap-2 mb-3">
-          {badges.map((badge, index) => (
-            <span key={index} className="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-              {badge}
-            </span>
-          ))}
-        </div>
-        
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600 mb-4 line-clamp-3">{description}</p>
-        
-        <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-          <span>{duration}</span>
-          <span>{level}</span>
-        </div>
-        
-        <Link href={href} className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors text-center block">
-          Learn More
-        </Link>
-      </div>
-    </div>
-  );
-};
 
 export default function HomePage() {
   // Static featured courses data
@@ -205,28 +106,6 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
-      {/* --- Navigation --- */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-red-600">TechGetAfrica</h1>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link href="/courses" className="text-gray-500 hover:text-gray-900">Courses</Link>
-              <Link href="/programs" className="text-gray-500 hover:text-gray-900">Programs</Link>
-              <Link href="/lms" className="text-gray-500 hover:text-gray-900">LMS</Link>
-              <Link href="/community" className="text-gray-500 hover:text-gray-900">Community</Link>
-            </nav>
-            <div className="flex items-center space-x-4">
-              <Link href="/lms" className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700">
-                Access LMS
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="flex-grow">
         {/* --- Hero Section --- */}
         <section
@@ -583,40 +462,9 @@ export default function HomePage() {
 
       </main>
 
-      {/* --- Simple Footer --- */}
-      <footer className="bg-gray-900">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <h3 className="text-2xl font-bold text-white mb-4">TechGetAfrica</h3>
-              <p className="text-gray-300 max-w-md">
-                Empowering African tech talent with world-class certifications and training programs.
-              </p>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Programs</h4>
-              <ul className="space-y-2">
-                <li><Link href="/courses" className="text-gray-300 hover:text-white">Courses</Link></li>
-                <li><Link href="/programs/accelerator" className="text-gray-300 hover:text-white">Accelerator</Link></li>
-                <li><Link href="/accreditation" className="text-gray-300 hover:text-white">Accreditation</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold mb-4">Community</h4>
-              <ul className="space-y-2">
-                <li><Link href="/lms" className="text-gray-300 hover:text-white">LMS Portal</Link></li>
-                <li><Link href="/community" className="text-gray-300 hover:text-white">Join Community</Link></li>
-                <li><Link href="/success-stories" className="text-gray-300 hover:text-white">Success Stories</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-700">
-            <p className="text-center text-gray-300">
-              © 2024 TechGetAfrica. All rights reserved. Building Africa's Tech Future.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer */}
+      
     </div>
   );
 }
+

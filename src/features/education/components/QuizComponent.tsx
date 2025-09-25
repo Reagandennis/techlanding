@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '../../../shared/components/ui/Button';
+import Button from '../../../shared/components/ui/Button';
 import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
 
 interface QuizQuestion {

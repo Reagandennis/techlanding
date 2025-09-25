@@ -4,10 +4,10 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Calendar, Clock, User, Video, ChevronRight, BookOpen, Mic, Headphones, Users } from 'lucide-react';
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import Footer from '../componets/Footer';
-import Navbar from '../componets/Navbar';
+import Button from '@/components/Button';
+import SectionHeading from '@/components/SectionHeading';
+import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
 
 const upcomingWebinars = [
   {
@@ -83,9 +83,7 @@ const webinarCategories = [
 export default function WebinarsPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-      <Navbar />
-      </header>
+      
 
       <main className="flex-grow">
         {/* Hero Section */}

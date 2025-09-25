@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { ArrowRight, GraduationCap, Building2, Download, BookOpen, Code, FileText, Video, CheckCircle2 } from 'lucide-react';
 
 // Import Components
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import Navbar from '../componets/Navbar';
-import Footer from '../componets/Footer';
+import Button from '@/components/Button';
+import SectionHeading from '@/components/SectionHeading';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 type UserType = 'student' | 'institution';
 
@@ -134,9 +134,7 @@ export default function Register() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <Navbar />
-      </header>
+      
 
       <main className="flex-grow">
         {/* Hero Section */}

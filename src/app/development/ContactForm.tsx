@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { handleSendEmail } from './actions'; // I will create this action next
-import Button from '../componets/Button';
+import Button from '@/components/Button';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),

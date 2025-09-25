@@ -12,9 +12,9 @@ import { useAuth, useUser, UserButton, SignInButton, SignUpButton } from "@clerk
 import { BadgeCheck, BookOpen, Clock, Award, ChevronRight, Users, BarChart2, Search, Filter, X, LogIn } from 'lucide-react';
 
 // Local component imports (ensure paths are correct)
-import Button from '../../componets/Button'; // Assuming Button component exists
-import SectionHeading from '../../componets/SectionHeading'; // Assuming SectionHeading component exists
-import Footer from '../../componets/Footer'; // Assuming Footer component exists
+import Button from '@/components/Button';
+import SectionHeading from '@/components/SectionHeading';
+import Footer from '@/components/Footer';
 
 // Paystack utility import (ensure path is correct)
 import { loadPaystack } from '../../utils/paystack'; // Assuming loadPaystack utility exists
@@ -205,56 +205,7 @@ function CertificationsPageContent() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 font-sans"> {/* Using a generic sans-serif font */}
 
-      {/* Header Section */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <nav className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-red-600">
-              TechGet<span className="text-black">Africa</span>
-            </Link>
-          </div>
-
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
-            {/* Highlight current page */}
-            <Link href="/certifications/all" className="font-semibold text-red-600 border-b-2 border-red-600 pb-1">Certifications</Link>
-            <Link href="/careers" className="text-gray-700 hover:text-red-600 transition-colors">Careers</Link>
-            <Link href="/resources" className="text-gray-700 hover:text-red-600 transition-colors">Resources</Link>
-            <Link href="/community" className="text-gray-700 hover:text-red-600 transition-colors">Community</Link>
-          </div>
-
-          {/* Clerk Authentication Buttons (Desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
-            {isSignedIn ? (
-              // If user is signed in, show their name and the UserButton (profile/logout menu)
-              <>
-                <span className="text-sm text-gray-600">
-                  Hi, {user?.firstName || user?.primaryEmailAddress?.emailAddress}
-                </span>
-                <UserButton afterSignOutUrl="/" /> {/* Redirect to home page after sign out */}
-              </>
-            ) : (
-              // If user is signed out, show Sign In and Sign Up buttons
-              <>
-                <SignInButton mode="modal">
-                  <button className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  {/* Use your custom Button component or a standard button */}
-                  <Button variant="primary" href={''}>
-                    Sign Up
-                  </Button>
-                </SignUpButton>
-              </>
-            )}
-          </div>
-          {/* TODO: Add a Mobile Menu button here that toggles visibility of links and auth buttons */}
-        </nav>
-      </header>
+      
 
       {/* Main Content Area */}
       <main className="flex-grow">

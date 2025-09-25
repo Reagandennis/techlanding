@@ -3,10 +3,10 @@
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '../componets/Navbar';
-import Footer from '../componets/Footer';
-import SectionHeading from '../componets/SectionHeading';
-import Button from '../componets/Button';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import SectionHeading from '@/components/SectionHeading';
+import Button from '@/components/Button';
 import { 
   BookOpen, 
   Award, 
@@ -177,7 +177,7 @@ export default function StudentPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}

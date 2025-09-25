@@ -87,6 +87,7 @@ const nextConfig = {
     
     // Image optimization
     images: {
+      dangerouslyAllowSVG: true,
       remotePatterns: [
         {
           protocol: 'https',

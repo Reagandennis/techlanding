@@ -6,6 +6,7 @@ import { UserRole } from '@prisma/client'
 import { canAccessLMSSection } from '@/lib/user-sync'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 interface LMSProtectedRouteProps {
   children: React.ReactNode
@@ -21,6 +22,7 @@ export default function LMSProtectedRoute({
   const { isLoaded, isSignedIn, user } = useUser()
   const [userRole, setUserRole] = useState<UserRole | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
@@ -34,17 +36,22 @@ export default function LMSProtectedRoute({
       })
       .then(res => res.json())
       .then(data => {
-        setUserRole(data.role || fallbackRole)
-        setLoading(false)
+        const role = data.role || fallbackRole;
+        setUserRole(role);
+        if (role === UserRole.USER) {
+          router.push('/lms/request-access');
+        } else {
+          setLoading(false);
+        }
       })
       .catch(() => {
-        setUserRole(fallbackRole)
-        setLoading(false)
+        setUserRole(fallbackRole);
+        setLoading(false);
       })
     } else if (isLoaded && !isSignedIn) {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [isLoaded, isSignedIn, user, fallbackRole])
+  }, [isLoaded, isSignedIn, user, fallbackRole, router])
 
   // Loading state
   if (!isLoaded || loading) {

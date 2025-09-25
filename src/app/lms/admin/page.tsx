@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { UserRole } from '@prisma/client'
-import LMSProtectedRoute from '@/app/componets/LMSProtectedRoute'
-import LMSLayout from '@/app/componets/LMSLayout'
+import LMSProtectedRoute from '@/components/LMSProtectedRoute'
+import LMSLayout from '@/components/LMSLayout'
 import { Users, BookOpen, TrendingUp, Shield, UserPlus, Settings, Edit, Trash2 } from 'lucide-react'
 
 interface AdminStats {

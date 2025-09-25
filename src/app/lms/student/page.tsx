@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
+import { BookOpen, Play, CheckCircle, Award, Clock, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
+import LMSLayout from '@/components/LMSLayout'
 import { UserRole } from '@prisma/client'
-import LMSProtectedRoute from '@/app/componets/LMSProtectedRoute'
-import LMSLayout from '@/app/componets/LMSLayout'
-import { BookOpen, Clock, Award, TrendingUp, Play } from 'lucide-react'
 
 interface DashboardStats {
   enrolledCourses: number
@@ -15,8 +16,8 @@ interface DashboardStats {
 }
 
 export default function StudentDashboard() {
-  const { user } = useUser()
-  const [userRole, setUserRole] = useState<UserRole>(UserRole.USER)
+  const { isLoaded, isSignedIn, user } = useUser()
+  const router = useRouter()
   const [stats, setStats] = useState<DashboardStats>({
     enrolledCourses: 0,
     completedCourses: 0,
@@ -25,12 +26,15 @@ export default function StudentDashboard() {
   })
   const [recentCourses, setRecentCourses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState<UserRole>(UserRole.USER)
 
   useEffect(() => {
-    if (user) {
+    if (isLoaded && isSignedIn) {
       fetchDashboardData()
+    } else if (isLoaded && !isSignedIn) {
+      router.push('/sign-in')
     }
-  }, [user])
+  }, [isLoaded, isSignedIn, router])
 
   const fetchDashboardData = async () => {
     try {
@@ -48,135 +52,127 @@ export default function StudentDashboard() {
     }
   }
 
+  if (!isLoaded || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isSignedIn) {
+    return null
+  }
+
   return (
-    <LMSProtectedRoute requiredSection="student">
-      <LMSLayout currentSection="student" userRole={userRole}>
-        <div className="space-y-8">
-          {/* Welcome Header */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.firstName || 'Student'}!
-            </h1>
-            <p className="text-gray-600">
-              Continue your learning journey and track your progress.
-            </p>
-          </div>
+    <LMSLayout userRole={userRole} currentSection="student">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.firstName || 'Student'}!</h1>
+          <p className="text-gray-600 mt-2">Continue your learning journey</p>
+        </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <BookOpen className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Enrolled Courses</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.enrolledCourses}</p>
-                </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <BookOpen className="h-6 w-6 text-blue-600" />
               </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Award className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Completed</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.completedCourses}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className="h-8 w-8 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Avg Progress</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.totalProgress}%</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Award className="h-8 w-8 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Certificates</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.certificates}</p>
-                </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.enrolledCourses}</p>
               </div>
             </div>
           </div>
 
-          {/* Recent Courses */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Continue Learning</h2>
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse flex space-x-4">
-                    <div className="rounded-lg bg-gray-200 h-20 w-20"></div>
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                      <div className="h-2 bg-gray-200 rounded w-full"></div>
-                    </div>
-                  </div>
-                ))}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
-            ) : recentCourses.length > 0 ? (
-              <div className="space-y-4">
-                {recentCourses.map((course) => (
-                  <div key={course.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-shrink-0">
-                      <img
-                        src={course.thumbnail || '/api/placeholder/80/80'}
-                        alt={course.title}
-                        className="h-20 w-20 rounded-lg object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-medium text-gray-900 truncate">
-                        {course.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 mb-2">{course.instructor}</p>
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-1">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-red-600 h-2 rounded-full" 
-                              style={{ width: `${course.progress}%` }}
-                            ></div>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">{course.progress}% complete</p>
-                        </div>
-                        <button className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
-                          <Play className="h-4 w-4" />
-                          <span>Continue</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Completed</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.completedCourses}</p>
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
-                <p className="text-gray-500 mb-6">Start your learning journey by enrolling in a course.</p>
-                <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition-colors">
-                  Browse Courses
-                </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-yellow-600" />
               </div>
-            )}
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Avg Progress</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalProgress}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Award className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Certificates</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.certificates}</p>
+              </div>
+            </div>
           </div>
         </div>
-      </LMSLayout>
-    </LMSProtectedRoute>
+
+        {/* Recent Courses */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Continue Learning</h2>
+              <div className="space-y-4">
+                {recentCourses.map(course => (
+                  <Link href={`/lms/courses/${course.id}`} key={course.id}>
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                      <div className="flex items-center">
+                        <div className="p-2 bg-red-100 rounded-lg">
+                          <Play className="h-5 w-5 text-red-600" />
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="font-medium text-gray-900">{course.title}</h3>
+                          <p className="text-sm text-gray-600">{course.instructor}</p>
+                        </div>
+                      </div>
+                      <div className="text-red-600 hover:text-red-700 font-medium">
+                        Continue
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="space-y-4">
+                <Link href="/courses" className="block w-full bg-red-600 text-white py-3 px-4 rounded-lg text-center hover:bg-red-700 transition-colors">
+                  Browse All Courses
+                </Link>
+                <Link href="/community-tour" className="block w-full border border-red-600 text-red-600 py-3 px-4 rounded-lg text-center hover:bg-red-50 transition-colors">
+                  Join Community
+                </Link>
+                <Link href="/eligibility-check" className="block w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg text-center hover:bg-gray-50 transition-colors">
+                  Check Eligibility
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </LMSLayout>
   )
 }
+

@@ -3,9 +3,9 @@
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '../componets/Navbar';
-import Footer from '../componets/Footer';
-import SectionHeading from '../componets/SectionHeading';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
+import SectionHeading from '../../components/SectionHeading';
 import { 
   Users, 
   BookOpen, 
@@ -22,8 +22,17 @@ interface AdminStats {
   totalCourses: number;
   totalEnrollments: number;
   totalCertificates: number;
-  monthlyRevenue: number;
+  totalRevenue: number;
   activeUsers: number;
+}
+
+interface RecentUser {
+  id: string;
+  clerkId: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
 }
 
 export default function AdminPage() {
@@ -34,9 +43,10 @@ export default function AdminPage() {
     totalCourses: 0,
     totalEnrollments: 0,
     totalCertificates: 0,
-    monthlyRevenue: 0,
+    totalRevenue: 0,
     activeUsers: 0
   });
+  const [recentUsers, setRecentUsers] = useState<RecentUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is admin
@@ -47,24 +57,19 @@ export default function AdminPage() {
         return;
       }
       
-      // Check user role - you'll need to implement this based on your user role system
-      // For now, allowing access but in production you should verify admin role
       fetchAdminStats();
     }
   }, [user, isLoaded, router]);
 
   const fetchAdminStats = async () => {
     try {
-      // This would be your actual admin API endpoints
-      // For now using placeholder data
-      setStats({
-        totalUsers: 1250,
-        totalCourses: 45,
-        totalEnrollments: 3200,
-        totalCertificates: 890,
-        monthlyRevenue: 45000,
-        activeUsers: 650
-      });
+      const response = await fetch('/api/lms/admin/dashboard');
+      if (!response.ok) {
+        throw new Error('Failed to fetch admin stats');
+      }
+      const data = await response.json();
+      setStats(data.stats);
+      setRecentUsers(data.users);
     } catch (error) {
       console.error('Error fetching admin stats:', error);
     } finally {
@@ -139,7 +144,7 @@ export default function AdminPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Certificates</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalCertificates}</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalCertificates.toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -156,6 +161,14 @@ export default function AdminPage() {
               >
                 <Users className="h-6 w-6 text-blue-500 mr-3" />
                 <span className="font-medium">Manage Users</span>
+              </button>
+
+              <button
+                onClick={() => router.push('/admin/users/roles')}
+                className="flex items-center p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Users className="h-6 w-6 text-blue-500 mr-3" />
+                <span className="font-medium">Manage User Roles</span>
               </button>
 
               <button
@@ -190,29 +203,15 @@ export default function AdminPage() {
           <div className="p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Platform Activity</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-gray-200">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
-                  <span className="text-gray-900">New user registration: John Doe</span>
+              {recentUsers.map((userItem) => (
+                <div key={userItem.id} className="flex items-center justify-between py-3 border-b border-gray-200">
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                    <span className="text-gray-900">New {userItem.role.toLowerCase()} registration: {userItem.name || userItem.email}</span>
+                  </div>
+                  <span className="text-sm text-gray-500">{new Date(userItem.createdAt).toLocaleDateString()}</span>
                 </div>
-                <span className="text-sm text-gray-500">2 minutes ago</span>
-              </div>
-              
-              <div className="flex items-center justify-between py-3 border-b border-gray-200">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                  <span className="text-gray-900">Course completed: React Development Basics</span>
-                </div>
-                <span className="text-sm text-gray-500">15 minutes ago</span>
-              </div>
-              
-              <div className="flex items-center justify-between py-3 border-b border-gray-200">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3"></div>
-                  <span className="text-gray-900">Certificate issued: AWS Cloud Practitioner</span>
-                </div>
-                <span className="text-sm text-gray-500">1 hour ago</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>

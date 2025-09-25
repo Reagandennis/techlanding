@@ -33,6 +33,9 @@ export default function Navbar() {
           <Link href="/programs" className="text-gray-700 hover:text-red-600 transition-colors">Programs</Link>
           <Link href="/consulting" className="text-gray-700 hover:text-red-600 transition-colors">Consulting</Link>
           <Link href="/accreditation" className="text-gray-700 hover:text-red-600 transition-colors">Accreditation</Link>
+          {isSignedIn && (
+            <Link href="/lms" className="text-gray-700 hover:text-red-600 transition-colors">LMS</Link>
+          )}
 
           <div 
             className="relative">
@@ -153,6 +156,9 @@ export default function Navbar() {
             <Link href="/communities" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Community</Link>
             <Link href="/development" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Development</Link>
             <Link href="/recruitment" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">Recruitment Agency Platform</Link>
+            {isSignedIn && (
+              <Link href="/lms" className="block px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md">LMS</Link>
+            )}
             {/* LMS Mobile Navigation */}
             {isSignedIn && (canAccessStudent || canAccessInstructor || canAccessAdmin) && (
               <div className="border-t pt-2 mt-2">

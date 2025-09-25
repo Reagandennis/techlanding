@@ -27,18 +27,20 @@ export async function GET(req: NextRequest) {
       totalUsers,
       totalCourses,
       activeUsers,
-      totalEnrollments
+      totalEnrollments,
+      totalCertificates
     ] = await Promise.all([
       prisma.user.count(),
       prisma.course.count(),
       prisma.user.count({
         where: {
           updatedAt: {
-            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) // Last 30 days
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
       }),
-      prisma.enrollment.count()
+      prisma.enrollment.count(),
+      prisma.certificate.count()
     ])
 
     // Calculate total revenue (mock calculation)
@@ -73,7 +75,9 @@ export async function GET(req: NextRequest) {
       totalUsers,
       totalCourses,
       totalRevenue: Math.round(totalRevenue),
-      activeUsers
+      activeUsers,
+      totalEnrollments,
+      totalCertificates
     }
 
     return NextResponse.json({
