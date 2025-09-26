@@ -49,11 +49,43 @@ model User {
   emailVerified     DateTime?
   password          String?
   image             String?
-  role              UserRole           @default(USER)
+  role              UserRole           @default(STUDENT)
   bio               String?
+  
+  // Enhanced profile fields
+  firstName         String?
+  lastName          String?
+  phone             String?
+  timezone          String?            @default("UTC")
+  language          String?            @default("en")
+  skillLevel        SkillLevel?        @default(BEGINNER)
+  learningGoals     String[]
+  interests         String[]
+  
+  // Social links
+  linkedinUrl       String?
+  twitterUrl        String?
+  githubUrl         String?
+  websiteUrl        String?
+  
+  // Notification preferences
+  emailNotifications    Boolean        @default(true)
+  pushNotifications     Boolean        @default(true)
+  marketingEmails       Boolean        @default(false)
+  
+  // Gamification
+  totalPoints       Int                @default(0)
+  currentStreak     Int                @default(0)
+  longestStreak     Int                @default(0)
+  lastActivityDate  DateTime?
+  
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  deletedAt         DateTime?
+  
+  // Relations
   accounts          Account[]
+  sessions          Session[]
   assignments       Assignment[]
   certificates      Certificate[]
   createdCourses    Course[]           @relation("CourseInstructor")
@@ -62,38 +94,123 @@ model User {
   progress          Progress[]
   createdQuizzes    Quiz[]             @relation("QuizCreator")
   quizAttempts      QuizAttempt[]
-  sessions          Session[]
   userBadges        UserBadge[]
   notifications     UserNotification[]
   uploadedVideos    VideoFile[]
+  
+  // New LMS Relations
+  sentMessages      Message[]          @relation("MessageSender")
+  receivedMessages  Message[]          @relation("MessageReceiver")
+  forumPosts        ForumPost[]
+  forumReplies      ForumReply[]
+  courseReviews     Review[]
+  payments          Payment[]
+  subscriptions     Subscription[]
+  submissions       Submission[]
+  achievements      Achievement[]
+  analytics         UserAnalytics[]
 
   @@index([email])
   @@index([clerkId])
   @@index([role])
+  @@index([createdAt])
 }
 
+// Enhanced Course Management
 model Course {
-  id            String           @id @default(cuid())
-  title         String
-  description   String
-  thumbnail     String?
-  price         Float            @default(0)
-  status        CourseStatus     @default(DRAFT)
-  accessCode    String?          @unique
-  instructorId  String
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  certificates  Certificate[]
-  instructor    User             @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: Cascade)
-  categories    CourseCategory[]
-  enrollments   Enrollment[]
-  lessons       Lesson[]
-  notifications Notification[]
-  quizzes       Quiz[]
-
-  @@index([status])
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  description     String    @db.Text
+  shortDescription String?
+  thumbnail       String?
+  trailerVideo    String?
+  
+  // Pricing
+  price           Decimal   @db.Decimal(10, 2) @default(0)
+  discountPrice   Decimal?  @db.Decimal(10, 2)
+  currency        String    @default("USD")
+  
+  // Course Status
+  status          CourseStatus @default(DRAFT)
+  published       Boolean   @default(false)
+  publishedAt     DateTime?
+  
+  // Course Details
+  level           CourseLevel @default(BEGINNER)
+  duration        Int? // in minutes
+  language        String    @default("en")
+  
+  // SEO & Marketing
+  metaTitle       String?
+  metaDescription String?
+  tags            String[]
+  
+  // Access Control
+  accessCode      String?   @unique
+  
+  // Instructor
+  instructorId    String
+  instructor      User      @relation("CourseInstructor", fields: [instructorId], references: [id])
+  
+  // Course Structure
+  modules         Module[]
+  lessons         Lesson[]
+  quizzes         Quiz[]
+  
+  // Learning Relations
+  enrollments     Enrollment[]
+  reviews         Review[]
+  progress        Progress[]
+  certificates    Certificate[]
+  
+  // Course Organization
+  categories      CourseCategory[]
+  
+  // Communication
+  notifications   Notification[]
+  forumPosts      ForumPost[]
+  
+  // Analytics
+  analytics       CourseAnalytics[]
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  
+  @@index([slug])
   @@index([instructorId])
+  @@index([published])
+  @@index([status])
+  @@index([level])
   @@index([accessCode])
+  @@index([title])
+  @@index([description])
+}
+
+// Course Structure
+model Module {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?   @db.Text
+  order           Int
+  
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  lessons         Lesson[]
+  quizzes         Quiz[]
+  assignments     Assignment[]
+  
+  // Requirements
+  prerequisites   String[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([courseId])
+  @@index([order])
 }
 
 model Category {
@@ -117,22 +234,45 @@ model Lesson {
   id          String       @id @default(cuid())
   title       String
   description String?
-  content     String?
+  content     String?      @db.Text
+  
+  // Media URLs
   videoUrl    String?
-  duration    Int?
+  audioUrl    String?
+  documentUrl String?
+  
+  // Video specific
+  videoThumbnail  String?
+  videoTranscript String?   @db.Text
+  
+  // Lesson properties
+  duration    Int? // in seconds
   order       Int
   type        LessonType   @default(TEXT)
   isPublished Boolean      @default(false)
+  isFree      Boolean      @default(false)
+  
+  // Interactive Content
+  interactiveContent Json?
+  
+  // Relations
   courseId    String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  assignments Assignment[]
   course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  moduleId    String?
+  module      Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  
+  assignments Assignment[]
   progress    Progress[]
   quizzes     Quiz[]
   videoFile   VideoFile?   @relation("LessonVideo")
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([courseId])
+  @@index([moduleId])
+  @@index([type])
   @@index([order])
 }
 
@@ -150,26 +290,31 @@ model Enrollment {
   paidAt        DateTime?
   course        Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payment       Payment?         @relation(fields: [paymentId], references: [id])
 
   @@unique([userId, courseId])
   @@index([userId])
   @@index([courseId])
   @@index([status])
+  @@index([paymentId])
 }
 
 model Progress {
   id          String    @id @default(cuid())
   userId      String
   lessonId    String
+  courseId    String
   isCompleted Boolean   @default(false)
   completedAt DateTime?
   timeSpent   Int?
   lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
   @@index([userId])
   @@index([lessonId])
+  @@index([courseId])
 }
 
 model Quiz {
@@ -178,6 +323,7 @@ model Quiz {
   description  String?
   lessonId     String?
   courseId     String?
+  moduleId     String?
   type         QuizType      @default(PRACTICE_QUIZ)
   timeLimit    Int?
   maxAttempts  Int           @default(3)
@@ -192,7 +338,10 @@ model Quiz {
   course       Course?       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   creator      User          @relation("QuizCreator", fields: [createdBy], references: [id], onDelete: Cascade)
   lesson       Lesson?       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  module       Module?       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   attempts     QuizAttempt[]
+
+  @@index([moduleId])
 }
 
 model Question {
@@ -254,6 +403,7 @@ model Assignment {
   title       String
   description String
   lessonId    String
+  moduleId    String?
   userId      String
   submission  String?
   grade       Float?
@@ -262,7 +412,11 @@ model Assignment {
   gradedAt    DateTime?
   createdAt   DateTime  @default(now())
   lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  module      Module?   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@index([moduleId])
 }
 
 model Certificate {
@@ -437,4 +591,320 @@ enum VideoProcessingStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+// Additional LMS Models
+
+// Reviews and Ratings
+model Review {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  
+  rating          Int // 1-5
+  review          String?   @db.Text
+  
+  // Moderation
+  isApproved      Boolean   @default(false)
+  moderatedAt     DateTime?
+  moderatedBy     String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@index([rating])
+  @@index([isApproved])
+}
+
+// Communication System
+model Message {
+  id              String    @id @default(cuid())
+  
+  senderId        String
+  sender          User      @relation("MessageSender", fields: [senderId], references: [id])
+  
+  receiverId      String
+  receiver        User      @relation("MessageReceiver", fields: [receiverId], references: [id])
+  
+  subject         String?
+  content         String    @db.Text
+  
+  isRead          Boolean   @default(false)
+  readAt          DateTime?
+  
+  // Attachments
+  attachments     String[]
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+}
+
+model ForumPost {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  
+  title           String
+  content         String    @db.Text
+  
+  // Moderation
+  isApproved      Boolean   @default(true)
+  isPinned        Boolean   @default(false)
+  
+  replies         ForumReply[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([courseId])
+  @@index([isApproved])
+}
+
+model ForumReply {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  postId          String
+  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  content         String    @db.Text
+  
+  // Threading
+  parentReplyId   String?
+  parentReply     ForumReply? @relation("ReplyThread", fields: [parentReplyId], references: [id])
+  childReplies    ForumReply[] @relation("ReplyThread")
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([postId])
+}
+
+// Payment & Billing
+model Payment {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  // Payment Details
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD")
+  status          PaymentStatus
+  
+  // Payment Provider (Paystack)
+  providerTransactionId String? @unique
+  providerReference String?
+  providerMetadata Json?
+  
+  // Related Records
+  enrollments     Enrollment[]
+  subscriptions   Subscription[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([providerTransactionId])
+}
+
+model Subscription {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  plan            SubscriptionPlan
+  status          SubscriptionStatus
+  
+  // Billing
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("USD")
+  billingCycle    BillingCycle
+  
+  // Subscription Periods
+  startDate       DateTime
+  endDate         DateTime
+  cancelledAt     DateTime?
+  
+  // Payment
+  paymentId       String?
+  payment         Payment?  @relation(fields: [paymentId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+// Submissions for Assignments
+model Submission {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  assignmentId    String
+  assignment      Assignment @relation(fields: [assignmentId], references: [id])
+  
+  // Submission Content
+  content         String?   @db.Text
+  fileUrls        String[]
+  
+  // Grading
+  score           Int?
+  maxScore        Int
+  feedback        String?   @db.Text
+  gradedAt        DateTime?
+  gradedBy        String? // User ID of grader
+  
+  status          SubmissionStatus @default(SUBMITTED)
+  
+  submittedAt     DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([assignmentId])
+  @@index([status])
+}
+
+// Gamification & Achievements
+model Achievement {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  type            AchievementType
+  title           String
+  description     String
+  icon            String?
+  points          Int       @default(0)
+  
+  earnedAt        DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([type])
+}
+
+// Analytics Models
+model UserAnalytics {
+  id              String    @id @default(cuid())
+  
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  
+  // Engagement Metrics
+  totalWatchTime  Int       @default(0) // in seconds
+  coursesEnrolled Int       @default(0)
+  coursesCompleted Int      @default(0)
+  certificatesEarned Int    @default(0)
+  
+  // Learning Streak
+  currentStreak   Int       @default(0)
+  longestStreak   Int       @default(0)
+  lastActivityDate DateTime?
+  
+  // Analytics Date
+  date            DateTime  @default(now())
+  
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model CourseAnalytics {
+  id              String    @id @default(cuid())
+  
+  courseId        String
+  course          Course    @relation(fields: [courseId], references: [id])
+  
+  // Enrollment Metrics
+  totalEnrollments Int      @default(0)
+  completionRate  Decimal   @db.Decimal(5, 2) @default(0)
+  averageRating   Decimal?  @db.Decimal(3, 2)
+  totalRevenue    Decimal   @db.Decimal(10, 2) @default(0)
+  
+  // Engagement Metrics
+  averageWatchTime Int      @default(0) // in seconds
+  dropOffRate     Decimal   @db.Decimal(5, 2) @default(0)
+  
+  // Analytics Date
+  date            DateTime  @default(now())
+  
+  @@unique([courseId, date])
+  @@index([courseId])
+}
+
+// Additional Enums
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAST_DUE
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  LIFETIME
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
+  LATE
+}
+
+enum AchievementType {
+  FIRST_COURSE
+  COURSE_COMPLETION
+  PERFECT_SCORE
+  LEARNING_STREAK
+  EARLY_BIRD
+  NIGHT_OWL
+  DISCUSSION_PARTICIPANT
+  MENTOR
+  CERTIFICATE_EARNER
 }

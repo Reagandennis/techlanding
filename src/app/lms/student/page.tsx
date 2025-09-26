@@ -3,10 +3,34 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Play, CheckCircle, Award, Clock, TrendingUp } from 'lucide-react'
+import { BookOpen, Play, CheckCircle, Award, Clock, TrendingUp, FileText, GraduationCap, Calendar, Trophy } from 'lucide-react'
 import Link from 'next/link'
-import LMSLayout from '@/components/LMSLayout'
+import LMSLayout from '@/components/lms/LMSLayout'
+import { 
+  WelcomeCard, 
+  StatsCard, 
+  CourseProgress, 
+  RecentActivity, 
+  UpcomingDeadlines, 
+  QuickActions 
+} from '@/components/lms/DashboardWidgets'
 import { UserRole } from '@prisma/client'
+
+interface DeadlineItem {
+  id: string;
+  title: string;
+  type: 'assignment' | 'quiz' | 'project';
+  dueDate: string;
+  courseTitle: string;
+}
+
+interface QuickAction {
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ElementType;
+  color: 'blue' | 'green' | 'yellow' | 'purple';
+}
 
 interface DashboardStats {
   enrolledCourses: number
@@ -67,110 +91,130 @@ export default function StudentDashboard() {
     return null
   }
 
+  // Prepare data for dashboard widgets
+  const courses = recentCourses.map(course => ({
+    id: course.id,
+    title: course.title,
+    progress: Math.floor(Math.random() * 100), // Replace with actual progress
+    totalLessons: 12,
+    completedLessons: Math.floor(Math.random() * 12)
+  }))
+
+  const activities = [
+    {
+      id: '1',
+      type: 'course_completed' as const,
+      title: 'Completed JavaScript Fundamentals',
+      description: 'You successfully completed the course',
+      timestamp: '2 hours ago'
+    },
+    {
+      id: '2',
+      type: 'assignment_submitted' as const,
+      title: 'Assignment submitted',
+      description: 'React Components Assignment',
+      timestamp: '1 day ago'
+    }
+  ]
+
+  const deadlines: DeadlineItem[] = [
+    {
+      id: '1',
+      title: 'JavaScript Assignment',
+      type: 'assignment',
+      dueDate: 'Tomorrow',
+      courseTitle: 'Web Development'
+    },
+    {
+      id: '2',
+      title: 'React Quiz',
+      type: 'quiz',
+      dueDate: 'In 3 days',
+      courseTitle: 'Advanced React'
+    }
+  ]
+
+  const quickActions: QuickAction[] = [
+    {
+      title: 'Browse Courses',
+      description: 'Find new courses',
+      href: '/lms/student/courses',
+      icon: BookOpen,
+      color: 'blue'
+    },
+    {
+      title: 'Assignments',
+      description: 'View pending tasks',
+      href: '/lms/student/assignments',
+      icon: FileText,
+      color: 'green'
+    },
+    {
+      title: 'Certificates',
+      description: 'Your achievements',
+      href: '/lms/student/certificates',
+      icon: GraduationCap,
+      color: 'purple'
+    },
+    {
+      title: 'Calendar',
+      description: 'View schedule',
+      href: '/lms/student/calendar',
+      icon: Calendar,
+      color: 'yellow'
+    }
+  ]
+
   return (
-    <LMSLayout userRole={userRole} currentSection="student">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.firstName || 'Student'}!</h1>
-          <p className="text-gray-600 mt-2">Continue your learning journey</p>
-        </div>
+    <LMSLayout userRole="STUDENT">
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <WelcomeCard 
+          userName={user?.firstName || 'Student'} 
+          userRole="STUDENT" 
+        />
+      </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <BookOpen className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Enrolled Courses</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.enrolledCourses}</p>
-              </div>
-            </div>
-          </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Enrolled Courses"
+          value={stats.enrolledCourses}
+          icon={BookOpen}
+          color="blue"
+          change="+2 this month"
+        />
+        <StatsCard
+          title="Completed Courses"
+          value={stats.completedCourses}
+          icon={Trophy}
+          color="green"
+          change="+1 this week"
+        />
+        <StatsCard
+          title="Average Progress"
+          value={`${stats.totalProgress}%`}
+          icon={TrendingUp}
+          color="yellow"
+          change="+15% this week"
+        />
+        <StatsCard
+          title="Certificates"
+          value={stats.certificates}
+          icon={Award}
+          color="red"
+        />
+      </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.completedCourses}</p>
-              </div>
-            </div>
-          </div>
+      {/* Dashboard Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <CourseProgress courses={courses} />
+        <RecentActivity activities={activities} />
+      </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProgress}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Award className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Certificates</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.certificates}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Courses */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Continue Learning</h2>
-              <div className="space-y-4">
-                {recentCourses.map(course => (
-                  <Link href={`/lms/courses/${course.id}`} key={course.id}>
-                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center">
-                        <div className="p-2 bg-red-100 rounded-lg">
-                          <Play className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div className="ml-3">
-                          <h3 className="font-medium text-gray-900">{course.title}</h3>
-                          <p className="text-sm text-gray-600">{course.instructor}</p>
-                        </div>
-                      </div>
-                      <div className="text-red-600 hover:text-red-700 font-medium">
-                        Continue
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="space-y-4">
-                <Link href="/courses" className="block w-full bg-red-600 text-white py-3 px-4 rounded-lg text-center hover:bg-red-700 transition-colors">
-                  Browse All Courses
-                </Link>
-                <Link href="/community-tour" className="block w-full border border-red-600 text-red-600 py-3 px-4 rounded-lg text-center hover:bg-red-50 transition-colors">
-                  Join Community
-                </Link>
-                <Link href="/eligibility-check" className="block w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg text-center hover:bg-gray-50 transition-colors">
-                  Check Eligibility
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UpcomingDeadlines deadlines={deadlines} />
+        <QuickActions actions={quickActions} />
       </div>
     </LMSLayout>
   )

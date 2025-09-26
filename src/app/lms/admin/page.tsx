@@ -4,8 +4,13 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { UserRole } from '@prisma/client'
 import LMSProtectedRoute from '@/components/LMSProtectedRoute'
-import LMSLayout from '@/components/LMSLayout'
-import { Users, BookOpen, TrendingUp, Shield, UserPlus, Settings, Edit, Trash2 } from 'lucide-react'
+import LMSLayout from '@/components/lms/LMSLayout'
+import { 
+  WelcomeCard, 
+  StatsCard, 
+  QuickActions 
+} from '@/components/lms/DashboardWidgets'
+import { Users, BookOpen, TrendingUp, Shield, UserPlus, Settings, Edit, Trash2, FileText, BarChart3, Calendar } from 'lucide-react'
 
 interface AdminStats {
   totalUsers: number
@@ -102,159 +107,132 @@ export default function AdminDashboard() {
     }
   }
 
+  const quickActions = [
+    {
+      title: 'Manage Users',
+      description: 'View and edit user roles',
+      href: '/lms/admin/users',
+      icon: Users,
+      color: 'blue' as const
+    },
+    {
+      title: 'Course Management',
+      description: 'Manage all courses',
+      href: '/lms/admin/courses',
+      icon: BookOpen,
+      color: 'green' as const
+    },
+    {
+      title: 'Reports & Analytics',
+      description: 'View platform analytics',
+      href: '/lms/admin/reports',
+      icon: BarChart3,
+      color: 'purple' as const
+    },
+    {
+      title: 'Platform Settings',
+      description: 'Configure system settings',
+      href: '/lms/admin/settings',
+      icon: Settings,
+      color: 'yellow' as const
+    }
+  ]
+
   return (
     <LMSProtectedRoute requiredSection="admin">
-      <LMSLayout currentSection="admin" userRole={userRole}>
-        <div className="space-y-8">
-          {/* Welcome Header */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-600">
-              Manage users, courses, and platform settings.
-            </p>
+      <LMSLayout userRole="ADMIN">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <WelcomeCard 
+            userName={user?.firstName || 'Admin'} 
+            userRole="ADMIN" 
+          />
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatsCard
+            title="Total Users"
+            value={stats.totalUsers}
+            icon={Users}
+            color="blue"
+            change="+12 this month"
+          />
+          <StatsCard
+            title="Total Courses"
+            value={stats.totalCourses}
+            icon={BookOpen}
+            color="green"
+            change="+3 this week"
+          />
+          <StatsCard
+            title="Platform Revenue"
+            value={`$${stats.totalRevenue.toLocaleString()}`}
+            icon={TrendingUp}
+            color="yellow"
+            change="+25% this month"
+          />
+          <StatsCard
+            title="Active Users"
+            value={stats.activeUsers}
+            icon={Shield}
+            color="red"
+            change="+8% this week"
+          />
+        </div>
+
+        {/* Quick Actions and User Management */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-1">
+            <QuickActions actions={quickActions} />
           </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Users className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Users</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.totalUsers}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <BookOpen className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Courses</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.totalCourses}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <TrendingUp className="h-8 w-8 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Platform Revenue</p>
-                  <p className="text-2xl font-semibold text-gray-900">${stats.totalRevenue}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Shield className="h-8 w-8 text-red-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Active Users</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stats.activeUsers}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Management */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">User Management</h2>
-              <div className="flex space-x-3">
-                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors inline-flex items-center space-x-2">
-                  <UserPlus className="h-4 w-4" />
-                  <span>Invite User</span>
+          
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Recent Users</h3>
+                <button className="text-sm text-blue-600 hover:text-blue-700">
+                  View all users
                 </button>
               </div>
-            </div>
-            
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="animate-pulse flex space-x-4 p-4">
-                    <div className="rounded-full bg-gray-200 h-10 w-10"></div>
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="animate-pulse flex space-x-4 p-4">
+                      <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+                      <div className="flex-1 space-y-2 py-1">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        User
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Joined
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((userData) => (
-                      <tr key={userData.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {userData.name?.charAt(0) || userData.email?.charAt(0) || 'U'}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {userData.name || 'No name'}
-                              </div>
-                              <div className="text-sm text-gray-500">{userData.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(userData.role)}`}>
-                            {userData.role}
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {users.slice(0, 5).map((userData) => (
+                    <div key={userData.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-700">
+                            {userData.name?.charAt(0) || userData.email?.charAt(0) || 'U'}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(userData.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button
-                            onClick={() => openRoleModal(userData)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button className="text-red-600 hover:text-red-900">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {userData.name || 'No name'}
+                          </p>
+                          <p className="text-xs text-gray-500">{userData.email}</p>
+                        </div>
+                      </div>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(userData.role)}`}>
+                        {userData.role}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

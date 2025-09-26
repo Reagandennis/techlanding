@@ -91,7 +91,7 @@ export default function HomePage() {
       author: "Emmanuel Okafor",
       role: "Network Security Specialist",
       company: "SecureNet Solutions",
-      imageSrc: "/images/testimonials/emmanuel.jpg",
+      imageSrc: "/images/reagan.jpg",
       location: "Lagos, Nigeria"
     }
   ];

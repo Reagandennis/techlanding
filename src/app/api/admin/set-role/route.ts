@@ -20,13 +20,13 @@ export async function POST(request: NextRequest) {
       where: { clerkId: userId }
     });
 
-    // Remove this check for initial admin setup
-    if (currentUser && currentUser.role !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Only admins can set user roles' },
-        { status: 403 }
-      );
-    }
+    // TODO: Re-enable this check after setting up initial admin accounts
+    // if (currentUser && currentUser.role !== 'ADMIN') {
+    //   return NextResponse.json(
+    //     { error: 'Only admins can set user roles' },
+    //     { status: 403 }
+    //   );
+    // }
 
     const body = await request.json();
     const { targetClerkId, role, name, email } = body;

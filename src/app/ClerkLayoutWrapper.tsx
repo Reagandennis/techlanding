@@ -14,8 +14,8 @@ export default function ClerkLayoutWrapper({ children }: { children: React.React
   return (
     <ClerkProvider
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      afterSignInUrl="/"
+      afterSignUpUrl="/"
     >
       {children}
     </ClerkProvider>

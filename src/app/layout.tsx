@@ -11,7 +11,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = defaultMetadata;
 
-import Navigation from '@/components/Navigation.test';
+import Navigation from '@/components/Navigation';
 
 // ... (imports remain the same)
 

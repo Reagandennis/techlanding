@@ -1,0 +1,164 @@
+{
+  "name": "TechGetAfrica LMS",
+  "short_name": "TechGetAfrica",
+  "description": "Leading Technology Education Platform in Africa - Learn, Practice, and Get Certified in cutting-edge technologies",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["education", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Courses",
+      "short_name": "Courses",
+      "description": "Access your enrolled courses",
+      "url": "/dashboard/student",
+      "icons": [
+        {
+          "src": "/icons/courses-shortcut.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Browse Courses",
+      "short_name": "Browse",
+      "description": "Explore available courses",
+      "url": "/courses",
+      "icons": [
+        {
+          "src": "/icons/browse-shortcut.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Certifications",
+      "short_name": "Certifications",
+      "description": "View your certificates",
+      "url": "/certificates",
+      "icons": [
+        {
+          "src": "/icons/cert-shortcut.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Forum",
+      "short_name": "Forum",
+      "description": "Join course discussions",
+      "url": "/forum",
+      "icons": [
+        {
+          "src": "/icons/forum-shortcut.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Course Dashboard"
+    },
+    {
+      "src": "/screenshots/desktop-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Video Learning Interface"
+    },
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Course View"
+    },
+    {
+      "src": "/screenshots/mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile Quiz Interface"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.techgetafrica.lms",
+      "id": "com.techgetafrica.lms"
+    },
+    {
+      "platform": "ios",
+      "url": "https://apps.apple.com/app/techgetafrica-lms/id123456789"
+    }
+  ],
+  "prefer_related_applications": false,
+  "features": [
+    "cross-origin-isolated"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "navigate-new"]
+  }
+}
