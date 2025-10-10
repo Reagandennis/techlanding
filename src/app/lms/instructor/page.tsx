@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { UserRole } from '@prisma/client'
-import LMSProtectedRoute from '@/components/LMSProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import LMSLayout from '@/components/LMSLayout'
 import { BookOpen, Users, TrendingUp, DollarSign, Plus, Eye, Edit } from 'lucide-react'
 import Link from 'next/link'
@@ -16,8 +15,8 @@ interface InstructorStats {
 }
 
 export default function InstructorDashboard() {
-  const { user } = useUser()
-  const [userRole, setUserRole] = useState<UserRole>(UserRole.USER)
+  const { user, loading: authLoading, isInstructor } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<InstructorStats>({
     totalCourses: 0,
     totalStudents: 0,
@@ -28,19 +27,33 @@ export default function InstructorDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (user) {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+      
+      if (!isInstructor()) {
+        router.push('/unauthorized')
+        return
+      }
+      
       fetchDashboardData()
     }
-  }, [user])
+  }, [user, authLoading, isInstructor, router])
 
   const fetchDashboardData = async () => {
     try {
       const response = await fetch('/api/lms/instructor/dashboard')
       if (response.ok) {
         const data = await response.json()
-        setStats(data.stats)
-        setCourses(data.courses)
-        setUserRole(data.userRole)
+        setStats(data.stats || {
+          totalCourses: 0,
+          totalStudents: 0,
+          totalRevenue: 0,
+          avgRating: 0
+        })
+        setCourses(data.courses || [])
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -49,23 +62,30 @@ export default function InstructorDashboard() {
     }
   }
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    )
+  }
+
   return (
-    <LMSProtectedRoute requiredSection="instructor">
-      <LMSLayout currentSection="instructor" userRole={userRole}>
+    <LMSLayout currentSection="instructor" userRole={user?.role}>
         <div className="space-y-8">
           {/* Welcome Header */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between items-center">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Welcome back, {user?.firstName || 'Instructor'}!
+                  Welcome back, {user?.profile?.full_name?.split(' ')[0] || 'Instructor'}!
                 </h1>
                 <p className="text-gray-600">
                   Manage your courses and track student progress.
                 </p>
               </div>
               <Link
-                href="/lms/instructor/courses/new"
+                href="/lms/instructor/courses/create"
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors inline-flex items-center space-x-2"
               >
                 <Plus className="h-4 w-4" />
@@ -137,7 +157,7 @@ export default function InstructorDashboard() {
               </Link>
             </div>
             
-            {loading ? (
+            {courses.length === 0 && !loading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="animate-pulse flex space-x-4">
@@ -194,7 +214,7 @@ export default function InstructorDashboard() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
                 <p className="text-gray-500 mb-6">Create your first course and start teaching.</p>
                 <Link
-                  href="/lms/instructor/courses/new"
+                  href="/lms/instructor/courses/create"
                   className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition-colors inline-flex items-center space-x-2"
                 >
                   <Plus className="h-4 w-4" />
@@ -247,6 +267,5 @@ export default function InstructorDashboard() {
           </div>
         </div>
       </LMSLayout>
-    </LMSProtectedRoute>
   )
 }

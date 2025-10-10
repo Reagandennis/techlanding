@@ -1,16 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useUser, UserButton, SignInButton, SignUpButton } from '@clerk/nextjs'
 import { useState, useEffect } from 'react'
 import { Menu, X, ChevronDown, GraduationCap, Briefcase, Shield, User, UserCheck } from 'lucide-react'
-import { useUserRole } from '@/hooks/useUserRole.simple'
+import { useAuth } from '@/contexts/AuthContext'
 import { MAIN_NAVIGATION } from '@/shared/config/navigation'
 import UserAccessBadge from './UserAccessBadge'
 
 export default function Navigation() {
-  const { isLoaded, isSignedIn, user } = useUser()
-  const { canAccessStudent, canAccessInstructor, canAccessAdmin, userRole, loading } = useUserRole()
+  const { user, loading, signOut, isAdmin, isInstructor, isStudent } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isServicesDropdownOpen, setIsServicesDropdownOpen] = useState(false)
   const [isLMSDropdownOpen, setIsLMSDropdownOpen] = useState(false)
@@ -96,7 +94,7 @@ export default function Navigation() {
           </div>
 
           {/* LMS Navigation - For Authenticated Users Only */}
-          {isSignedIn && !loading && (canAccessStudent || canAccessInstructor || canAccessAdmin) && (
+          {user && !loading && (
             <div className="relative" onClick={(e) => e.stopPropagation()}>
               <button
                 className="flex items-center bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 transition-colors font-medium px-3 py-2 rounded-lg border border-red-200"
@@ -114,27 +112,25 @@ export default function Navigation() {
                   <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
                     <div className="flex items-center text-xs text-gray-600">
                       <Shield className="h-3 w-3 mr-1" />
-                      <span>Secure Access - Role: {userRole}</span>
+                      <span>Secure Access - Role: {user?.role}</span>
                     </div>
                   </div>
                   
                   {/* Student Access */}
-                  {canAccessStudent && (
-                    <Link
-                      href="/lms/student"
-                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
-                      onClick={() => setIsLMSDropdownOpen(false)}
-                    >
-                      <User className="h-4 w-4 mr-3 text-blue-500" />
-                      <div>
-                        <div className="font-medium">Student Dashboard</div>
-                        <div className="text-xs text-gray-500">View courses & progress</div>
-                      </div>
-                    </Link>
-                  )}
+                  <Link
+                    href="/lms/student"
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors group"
+                    onClick={() => setIsLMSDropdownOpen(false)}
+                  >
+                    <User className="h-4 w-4 mr-3 text-blue-500" />
+                    <div>
+                      <div className="font-medium">Student Dashboard</div>
+                      <div className="text-xs text-gray-500">View courses & progress</div>
+                    </div>
+                  </Link>
                   
                   {/* Instructor Access */}
-                  {canAccessInstructor && (
+                  {(isInstructor() || isAdmin()) && (
                     <Link
                       href="/lms/instructor"
                       className="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors group"
@@ -149,7 +145,7 @@ export default function Navigation() {
                   )}
                   
                   {/* Admin Access */}
-                  {canAccessAdmin && (
+                  {isAdmin() && (
                     <Link
                       href="/lms/admin"
                       className="flex items-center px-4 py-3 text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors group"
@@ -173,7 +169,7 @@ export default function Navigation() {
           )}
           
           {/* Loading state for LMS */}
-          {isSignedIn && loading && (
+          {user && loading && (
             <div className="flex items-center px-3 py-2 bg-gray-100 rounded-lg">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
               <span className="text-sm text-gray-600">Loading access...</span>
@@ -196,29 +192,34 @@ export default function Navigation() {
 
         {/* Auth Buttons */}
         <div className="hidden lg:flex items-center space-x-4">
-          {!isLoaded ? (
+          {loading ? (
             <div className="animate-pulse flex space-x-4">
               <div className="h-8 w-20 bg-gray-200 rounded"></div>
               <div className="h-8 w-20 bg-gray-200 rounded"></div>
             </div>
-          ) : isSignedIn ? (
+          ) : user ? (
             <div className="flex items-center space-x-3">
               <UserAccessBadge />
-              <span className="text-gray-700 text-sm">Hello, {user.firstName || user.username}</span>
-              <UserButton afterSignOutUrl="/" />
+              <span className="text-gray-700 text-sm">Hello, {user.profile.first_name || user.profile.name}</span>
+              <button
+                onClick={() => signOut()}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg transition-colors font-medium"
+              >
+                Sign Out
+              </button>
             </div>
           ) : (
             <div className="flex items-center space-x-3">
-              <SignInButton mode="modal">
+              <Link href="/auth/sign-in">
                 <button className="text-gray-700 hover:text-red-600 transition-colors font-medium">
                   Log In
                 </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
+              </Link>
+              <Link href="/auth/sign-up">
                 <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
                   Get Started
                 </button>
-              </SignUpButton>
+              </Link>
             </div>
           )}
         </div>
@@ -276,7 +277,7 @@ export default function Navigation() {
             </div>
 
             {/* LMS Mobile Navigation */}
-            {isSignedIn && !loading && (canAccessStudent || canAccessInstructor || canAccessAdmin) && (
+            {user && !loading && (
               <div className="border-b border-gray-100 pb-2 mb-2 bg-red-50 rounded-lg mx-2">
                 <div className="px-3 py-2 flex items-center">
                   <Shield className="h-4 w-4 mr-2 text-red-600" />
@@ -285,25 +286,23 @@ export default function Navigation() {
                   </p>
                 </div>
                 <div className="px-2">
-                  <p className="px-3 py-1 text-xs text-gray-600">Role: {userRole} | Secure Access</p>
+                  <p className="px-3 py-1 text-xs text-gray-600">Role: {user?.role} | Secure Access</p>
                   
                   {/* Student Access */}
-                  {canAccessStudent && (
-                    <Link 
-                      href="/lms/student"
-                      className="flex items-center px-3 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors m-1"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <User className="h-4 w-4 mr-3 text-blue-500" />
-                      <div>
-                        <div className="font-medium text-sm">Student Dashboard</div>
-                        <div className="text-xs text-gray-500">View courses & progress</div>
-                      </div>
-                    </Link>
-                  )}
+                  <Link 
+                    href="/lms/student"
+                    className="flex items-center px-3 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors m-1"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4 mr-3 text-blue-500" />
+                    <div>
+                      <div className="font-medium text-sm">Student Dashboard</div>
+                      <div className="text-xs text-gray-500">View courses & progress</div>
+                    </div>
+                  </Link>
                   
                   {/* Instructor Access */}
-                  {canAccessInstructor && (
+                  {(isInstructor() || isAdmin()) && (
                     <Link 
                       href="/lms/instructor"
                       className="flex items-center px-3 py-2 text-gray-700 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors m-1"
@@ -318,7 +317,7 @@ export default function Navigation() {
                   )}
                   
                   {/* Admin Access */}
-                  {canAccessAdmin && (
+                  {isAdmin() && (
                     <Link 
                       href="/lms/admin"
                       className="flex items-center px-3 py-2 text-gray-700 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors m-1"
@@ -336,7 +335,7 @@ export default function Navigation() {
             )}
             
             {/* Mobile Loading state for LMS */}
-            {isSignedIn && loading && (
+            {user && loading && (
               <div className="border-b border-gray-100 pb-2 mb-2 mx-2">
                 <div className="flex items-center px-3 py-3 bg-gray-100 rounded-lg">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-3"></div>
@@ -361,28 +360,33 @@ export default function Navigation() {
 
             {/* Auth Section */}
             <div className="px-3 py-2">
-              {!isLoaded ? (
+              {loading ? (
                 <div className="animate-pulse space-y-2">
                   <div className="h-10 bg-gray-200 rounded"></div>
                   <div className="h-10 bg-gray-200 rounded"></div>
                 </div>
-              ) : isSignedIn ? (
+              ) : user ? (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-700 text-sm">Hello, {user.firstName || user.username}</span>
-                  <UserButton afterSignOutUrl="/" />
+                  <span className="text-gray-700 text-sm">Hello, {user.profile.first_name || user.profile.name}</span>
+                  <button
+                    onClick={() => signOut()}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm transition-colors"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <SignInButton mode="modal">
+                  <Link href="/auth/sign-in">
                     <button className="w-full text-left px-3 py-2 text-gray-700 hover:text-red-600 hover:bg-gray-50 rounded-md transition-colors">
                       Log In
                     </button>
-                  </SignInButton>
-                  <SignUpButton mode="modal">
+                  </Link>
+                  <Link href="/auth/sign-up">
                     <button className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md transition-colors font-medium">
                       Get Started
                     </button>
-                  </SignUpButton>
+                  </Link>
                 </div>
               )}
             </div>

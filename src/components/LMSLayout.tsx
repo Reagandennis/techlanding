@@ -1,10 +1,10 @@
 'use client'
 
-import { UserRole } from '@prisma/client'
+import { UserRole } from '@/types/supabase'
 
 interface LMSLayoutProps {
   children: React.ReactNode
-  userRole: UserRole
+  userRole?: UserRole
   currentSection: 'student' | 'instructor' | 'admin'
 }
 

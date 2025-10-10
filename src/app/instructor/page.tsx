@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -40,7 +40,7 @@ interface Course {
 }
 
 export default function InstructorPage() {
-  const { user, isLoaded } = useUser();
+  const { user, loading, isInstructor } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<InstructorStats>({
     totalCourses: 0,
@@ -54,15 +54,20 @@ export default function InstructorPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (!loading) {
       if (!user) {
-        router.push('/sign-in');
+        router.push('/auth/login');
+        return;
+      }
+      
+      if (!isInstructor()) {
+        router.push('/unauthorized');
         return;
       }
       
       fetchInstructorData();
     }
-  }, [user, isLoaded, router]);
+  }, [user, loading, isInstructor, router]);
 
   const fetchInstructorData = async () => {
     try {
@@ -118,10 +123,30 @@ export default function InstructorPage() {
     }
   };
 
-  if (!isLoaded || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
+  // Check if user has instructor access
+  if (!user || !isInstructor()) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            {!user ? 'Please log in to access the instructor dashboard.' : 'Instructor privileges required.'}
+          </p>
+          <button
+            onClick={() => router.push(user ? '/unauthorized' : '/auth/login')}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+          >
+            {user ? 'Go Back' : 'Sign In'}
+          </button>
+        </div>
       </div>
     );
   }
@@ -136,7 +161,7 @@ export default function InstructorPage() {
           <div>
             <SectionHeading
               eyebrow="Instructor Dashboard"
-              title={`Welcome back, ${user?.firstName || 'Instructor'}!`}
+              title={`Welcome back, ${user?.profile?.name || user?.email || 'Instructor'}!`}
               description="Manage your courses and track your teaching impact"
             />
           </div>

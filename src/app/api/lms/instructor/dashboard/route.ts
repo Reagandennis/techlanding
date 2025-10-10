@@ -1,69 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
-import { prisma } from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
-import { canAccessLMSSection } from '@/lib/user-sync.server'
+import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 export async function GET(req: NextRequest) {
   try {
-    const { userId: clerkId } = auth()
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
-    if (!clerkId) {
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Sync and get user
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId }
-    })
+    // Check if user has instructor role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
 
-    if (!dbUser || !canAccessLMSSection(dbUser.role, 'instructor')) {
+    if (!profile || (profile.role !== 'INSTRUCTOR' && profile.role !== 'ADMIN')) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Get instructor's courses
-    const courses = await prisma.course.findMany({
-      where: { instructorId: dbUser.id },
-      include: {
-        enrollments: true,
-        _count: {
-          select: { enrollments: true }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    // For now, return mock data since we're transitioning from Prisma to Supabase
+    // You would need to implement actual course queries based on your Supabase schema
 
-    // Calculate statistics
-    const totalCourses = courses.length
-    const totalStudents = courses.reduce((sum, course) => sum + course._count.enrollments, 0)
-    
-    // Calculate revenue
-    const enrollments = await prisma.enrollment.findMany({
-      where: {
-        course: {
-          instructorId: dbUser.id
-        },
-        paymentStatus: 'COMPLETED'
-      },
-      include: { course: true }
-    })
-    
-    const totalRevenue = enrollments.reduce((sum, enrollment) => {
-      return sum + (enrollment.paymentAmount || enrollment.course.price || 0)
-    }, 0)
+    // Mock data for instructor dashboard
+    // This should be replaced with actual Supabase queries when course tables are set up
+    const totalCourses = 0
+    const totalStudents = 0
+    const totalRevenue = 0
+    const avgRating = 0
 
-    // Mock average rating (would normally be calculated from reviews)
-    const avgRating = 4.5
-
-    // Format courses for display
-    const formattedCourses = courses.slice(0, 5).map(course => ({
-      id: course.id,
-      title: course.title,
-      thumbnail: course.thumbnail,
-      status: course.status,
-      enrollments: course._count.enrollments,
-      price: course.price
-    }))
+    const formattedCourses: any[] = []
 
     const stats = {
       totalCourses,
@@ -75,7 +47,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       stats,
       courses: formattedCourses,
-      userRole: dbUser.role
+      userRole: profile.role
     })
 
   } catch (error) {

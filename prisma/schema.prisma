@@ -3,182 +3,106 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id                String             @id @default(cuid())
-  clerkId           String?            @unique
-  name              String?
-  email             String?            @unique
-  emailVerified     DateTime?
-  password          String?
-  image             String?
-  role              UserRole           @default(STUDENT)
-  bio               String?
-  
-  // Enhanced profile fields
-  firstName         String?
-  lastName          String?
-  phone             String?
-  timezone          String?            @default("UTC")
-  language          String?            @default("en")
-  skillLevel        SkillLevel?        @default(BEGINNER)
-  learningGoals     String[]
-  interests         String[]
-  
-  // Social links
-  linkedinUrl       String?
-  twitterUrl        String?
-  githubUrl         String?
-  websiteUrl        String?
-  
-  // Notification preferences
-  emailNotifications    Boolean        @default(true)
-  pushNotifications     Boolean        @default(true)
-  marketingEmails       Boolean        @default(false)
-  
-  // Gamification
-  totalPoints       Int                @default(0)
-  currentStreak     Int                @default(0)
-  longestStreak     Int                @default(0)
-  lastActivityDate  DateTime?
-  
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  deletedAt         DateTime?
-  
-  // Relations
-  accounts          Account[]
-  sessions          Session[]
-  assignments       Assignment[]
-  certificates      Certificate[]
-  createdCourses    Course[]           @relation("CourseInstructor")
-  enrollments       Enrollment[]
-  sentNotifications Notification[]     @relation("SentNotifications")
-  progress          Progress[]
-  createdQuizzes    Quiz[]             @relation("QuizCreator")
-  quizAttempts      QuizAttempt[]
-  userBadges        UserBadge[]
-  notifications     UserNotification[]
-  uploadedVideos    VideoFile[]
-  
-  // New LMS Relations
-  sentMessages      Message[]          @relation("MessageSender")
-  receivedMessages  Message[]          @relation("MessageReceiver")
-  forumPosts        ForumPost[]
-  forumReplies      ForumReply[]
-  courseReviews     Review[]
-  payments          Payment[]
-  subscriptions     Subscription[]
-  submissions       Submission[]
-  achievements      Achievement[]
-  analytics         UserAnalytics[]
+  id                 String             @id @db.Uuid
+  email              String             @unique
+  name               String?
+  role               UserRole           @default(STUDENT)
+  firstName          String?
+  lastName           String?
+  phone              String?
+  bio                String?
+  image              String?
+  timezone           String?            @default("UTC")
+  language           String?            @default("en")
+  skillLevel         SkillLevel?        @default(BEGINNER)
+  learningGoals      String[]
+  interests          String[]
+  linkedinUrl        String?
+  twitterUrl         String?
+  githubUrl          String?
+  websiteUrl         String?
+  emailNotifications Boolean            @default(true)
+  pushNotifications  Boolean            @default(true)
+  marketingEmails    Boolean            @default(false)
+  totalPoints        Int                @default(0)
+  currentStreak      Int                @default(0)
+  longestStreak      Int                @default(0)
+  lastActivityDate   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
+  achievements       Achievement[]
+  assignments        Assignment[]
+  certificates       Certificate[]
+  createdCourses     Course[]           @relation("CourseInstructor")
+  enrollments        Enrollment[]
+  forumPosts         ForumPost[]
+  forumReplies       ForumReply[]
+  receivedMessages   Message[]          @relation("MessageReceiver")
+  sentMessages       Message[]          @relation("MessageSender")
+  sentNotifications  Notification[]     @relation("SentNotifications")
+  payments           Payment[]
+  progress           Progress[]
+  createdQuizzes     Quiz[]             @relation("QuizCreator")
+  quizAttempts       QuizAttempt[]
+  courseReviews      Review[]
+  submissions        Submission[]
+  subscriptions      Subscription[]
+  analytics          UserAnalytics[]
+  userBadges         UserBadge[]
+  notifications      UserNotification[]
+  uploadedVideos     VideoFile[]
 
   @@index([email])
-  @@index([clerkId])
   @@index([role])
   @@index([createdAt])
+  @@map("profiles")
 }
 
-// Enhanced Course Management
 model Course {
-  id              String    @id @default(cuid())
-  title           String
-  slug            String    @unique
-  description     String    @db.Text
+  id               String            @id @default(cuid())
+  title            String
+  slug             String            @unique
+  description      String
   shortDescription String?
-  thumbnail       String?
-  trailerVideo    String?
-  
-  // Pricing
-  price           Decimal   @db.Decimal(10, 2) @default(0)
-  discountPrice   Decimal?  @db.Decimal(10, 2)
-  currency        String    @default("USD")
-  
-  // Course Status
-  status          CourseStatus @default(DRAFT)
-  published       Boolean   @default(false)
-  publishedAt     DateTime?
-  
-  // Course Details
-  level           CourseLevel @default(BEGINNER)
-  duration        Int? // in minutes
-  language        String    @default("en")
-  
-  // SEO & Marketing
-  metaTitle       String?
-  metaDescription String?
-  tags            String[]
-  
-  // Access Control
-  accessCode      String?   @unique
-  
-  // Instructor
-  instructorId    String
-  instructor      User      @relation("CourseInstructor", fields: [instructorId], references: [id])
-  
-  // Course Structure
-  modules         Module[]
-  lessons         Lesson[]
-  quizzes         Quiz[]
-  
-  // Learning Relations
-  enrollments     Enrollment[]
-  reviews         Review[]
-  progress        Progress[]
-  certificates    Certificate[]
-  
-  // Course Organization
-  categories      CourseCategory[]
-  
-  // Communication
-  notifications   Notification[]
-  forumPosts      ForumPost[]
-  
-  // Analytics
-  analytics       CourseAnalytics[]
-  
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  deletedAt       DateTime?
-  
+  thumbnail        String?
+  trailerVideo     String?
+  price            Decimal           @default(0) @db.Decimal(10, 2)
+  discountPrice    Decimal?          @db.Decimal(10, 2)
+  currency         String            @default("USD")
+  status           CourseStatus      @default(DRAFT)
+  published        Boolean           @default(false)
+  publishedAt      DateTime?
+  level            CourseLevel       @default(BEGINNER)
+  duration         Int?
+  language         String            @default("en")
+  metaTitle        String?
+  metaDescription  String?
+  tags             String[]
+  accessCode       String?           @unique
+  instructorId     String            @db.Uuid
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+  certificates     Certificate[]
+  instructor       User              @relation("CourseInstructor", fields: [instructorId], references: [id])
+  analytics        CourseAnalytics[]
+  categories       CourseCategory[]
+  enrollments      Enrollment[]
+  forumPosts       ForumPost[]
+  lessons          Lesson[]
+  modules          Module[]
+  notifications    Notification[]
+  progress         Progress[]
+  quizzes          Quiz[]
+  reviews          Review[]
+
   @@index([slug])
   @@index([instructorId])
   @@index([published])
@@ -189,26 +113,20 @@ model Course {
   @@index([description])
 }
 
-// Course Structure
 model Module {
-  id              String    @id @default(cuid())
-  title           String
-  description     String?   @db.Text
-  order           Int
-  
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  lessons         Lesson[]
-  quizzes         Quiz[]
-  assignments     Assignment[]
-  
-  // Requirements
-  prerequisites   String[]
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  id            String       @id @default(cuid())
+  title         String
+  description   String?
+  order         Int
+  courseId      String
+  prerequisites String[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  assignments   Assignment[]
+  lessons       Lesson[]
+  course        Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quizzes       Quiz[]
+
   @@index([courseId])
   @@index([order])
 }
@@ -231,44 +149,31 @@ model CourseCategory {
 }
 
 model Lesson {
-  id          String       @id @default(cuid())
-  title       String
-  description String?
-  content     String?      @db.Text
-  
-  // Media URLs
-  videoUrl    String?
-  audioUrl    String?
-  documentUrl String?
-  
-  // Video specific
-  videoThumbnail  String?
-  videoTranscript String?   @db.Text
-  
-  // Lesson properties
-  duration    Int? // in seconds
-  order       Int
-  type        LessonType   @default(TEXT)
-  isPublished Boolean      @default(false)
-  isFree      Boolean      @default(false)
-  
-  // Interactive Content
+  id                 String       @id @default(cuid())
+  title              String
+  description        String?
+  content            String?
+  videoUrl           String?
+  audioUrl           String?
+  documentUrl        String?
+  videoThumbnail     String?
+  videoTranscript    String?
+  duration           Int?
+  order              Int
+  type               LessonType   @default(TEXT)
+  isPublished        Boolean      @default(false)
+  isFree             Boolean      @default(false)
   interactiveContent Json?
-  
-  // Relations
-  courseId    String
-  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  moduleId    String?
-  module      Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  
-  assignments Assignment[]
-  progress    Progress[]
-  quizzes     Quiz[]
-  videoFile   VideoFile?   @relation("LessonVideo")
-  
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  courseId           String
+  moduleId           String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  assignments        Assignment[]
+  course             Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module             Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress           Progress[]
+  quizzes            Quiz[]
+  videoFile          VideoFile?   @relation("LessonVideo")
 
   @@index([courseId])
   @@index([moduleId])
@@ -278,7 +183,7 @@ model Lesson {
 
 model Enrollment {
   id            String           @id @default(cuid())
-  userId        String
+  userId        String           @db.Uuid
   courseId      String
   status        EnrollmentStatus @default(ACTIVE)
   progress      Float            @default(0)
@@ -289,8 +194,8 @@ model Enrollment {
   paymentAmount Float?
   paidAt        DateTime?
   course        Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   payment       Payment?         @relation(fields: [paymentId], references: [id])
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@index([userId])
@@ -301,14 +206,14 @@ model Enrollment {
 
 model Progress {
   id          String    @id @default(cuid())
-  userId      String
+  userId      String    @db.Uuid
   lessonId    String
   courseId    String
   isCompleted Boolean   @default(false)
   completedAt DateTime?
   timeSpent   Int?
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
@@ -331,7 +236,7 @@ model Quiz {
   totalPoints  Float         @default(100.0)
   isPublished  Boolean       @default(false)
   instructions String?
-  createdBy    String
+  createdBy    String        @db.Uuid
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   questions    Question[]
@@ -363,7 +268,7 @@ model Question {
 
 model QuizAttempt {
   id            String           @id @default(cuid())
-  userId        String
+  userId        String           @db.Uuid
   quizId        String
   attemptNumber Int              @default(1)
   score         Float            @default(0.0)
@@ -399,21 +304,21 @@ model QuestionAnswer {
 }
 
 model Assignment {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String
   lessonId    String
   moduleId    String?
-  userId      String
+  userId      String       @db.Uuid
   submission  String?
   grade       Float?
   feedback    String?
   submittedAt DateTime?
   gradedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  module      Module?   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  module      Module?      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   submissions Submission[]
 
   @@index([moduleId])
@@ -424,7 +329,7 @@ model Certificate {
   title          String
   description    String
   type           CertificateType
-  userId         String
+  userId         String          @db.Uuid
   courseId       String?
   templateData   Json
   issueDate      DateTime        @default(now())
@@ -451,7 +356,7 @@ model Badge {
 
 model UserBadge {
   id       String   @id @default(cuid())
-  userId   String
+  userId   String   @db.Uuid
   badgeId  String
   earnedAt DateTime @default(now())
   progress Float    @default(100)
@@ -467,7 +372,7 @@ model Notification {
   title      String
   message    String
   type       NotificationType
-  senderId   String
+  senderId   String             @db.Uuid
   courseId   String?
   data       Json?
   isGlobal   Boolean            @default(false)
@@ -480,7 +385,7 @@ model Notification {
 
 model UserNotification {
   id             String       @id @default(cuid())
-  userId         String
+  userId         String       @db.Uuid
   notificationId String
   isRead         Boolean      @default(false)
   readAt         DateTime?
@@ -500,12 +405,197 @@ model VideoFile {
   filePath         String
   thumbnailPath    String?
   processingStatus VideoProcessingStatus @default(PENDING)
-  uploadedBy       String
+  uploadedBy       String                @db.Uuid
   lessonId         String                @unique
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   lesson           Lesson                @relation("LessonVideo", fields: [lessonId], references: [id], onDelete: Cascade)
   uploader         User                  @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id          String    @id @default(cuid())
+  userId      String    @db.Uuid
+  courseId    String
+  rating      Int
+  review      String?
+  isApproved  Boolean   @default(false)
+  moderatedAt DateTime?
+  moderatedBy String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  course      Course    @relation(fields: [courseId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+  @@index([rating])
+  @@index([isApproved])
+}
+
+model Message {
+  id          String    @id @default(cuid())
+  senderId    String    @db.Uuid
+  receiverId  String    @db.Uuid
+  subject     String?
+  content     String
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  attachments String[]
+  createdAt   DateTime  @default(now())
+  receiver    User      @relation("MessageReceiver", fields: [receiverId], references: [id])
+  sender      User      @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+}
+
+model ForumPost {
+  id         String       @id @default(cuid())
+  userId     String       @db.Uuid
+  courseId   String
+  title      String
+  content    String
+  isApproved Boolean      @default(true)
+  isPinned   Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  course     Course       @relation(fields: [courseId], references: [id])
+  user       User         @relation(fields: [userId], references: [id])
+  replies    ForumReply[]
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([isApproved])
+}
+
+model ForumReply {
+  id            String       @id @default(cuid())
+  userId        String       @db.Uuid
+  postId        String
+  content       String
+  parentReplyId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  parentReply   ForumReply?  @relation("ReplyThread", fields: [parentReplyId], references: [id])
+  childReplies  ForumReply[] @relation("ReplyThread")
+  post          ForumPost    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user          User         @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([postId])
+}
+
+model Payment {
+  id                    String         @id @default(cuid())
+  userId                String         @db.Uuid
+  amount                Decimal        @db.Decimal(10, 2)
+  currency              String         @default("USD")
+  status                PaymentStatus
+  providerTransactionId String?        @unique
+  providerReference     String?
+  providerMetadata      Json?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  enrollments           Enrollment[]
+  user                  User           @relation(fields: [userId], references: [id])
+  subscriptions         Subscription[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([providerTransactionId])
+}
+
+model Subscription {
+  id           String             @id @default(cuid())
+  userId       String             @db.Uuid
+  plan         SubscriptionPlan
+  status       SubscriptionStatus
+  amount       Decimal            @db.Decimal(10, 2)
+  currency     String             @default("USD")
+  billingCycle BillingCycle
+  startDate    DateTime
+  endDate      DateTime
+  cancelledAt  DateTime?
+  paymentId    String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  payment      Payment?           @relation(fields: [paymentId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Submission {
+  id           String           @id @default(cuid())
+  userId       String           @db.Uuid
+  assignmentId String
+  content      String?
+  fileUrls     String[]
+  score        Int?
+  maxScore     Int
+  feedback     String?
+  gradedAt     DateTime?
+  gradedBy     String?
+  status       SubmissionStatus @default(SUBMITTED)
+  submittedAt  DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  assignment   Assignment       @relation(fields: [assignmentId], references: [id])
+  user         User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([assignmentId])
+  @@index([status])
+}
+
+model Achievement {
+  id          String          @id @default(cuid())
+  userId      String          @db.Uuid
+  type        AchievementType
+  title       String
+  description String
+  icon        String?
+  points      Int             @default(0)
+  earnedAt    DateTime        @default(now())
+  user        User            @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+}
+
+model UserAnalytics {
+  id                 String    @id @default(cuid())
+  userId             String    @db.Uuid
+  totalWatchTime     Int       @default(0)
+  coursesEnrolled    Int       @default(0)
+  coursesCompleted   Int       @default(0)
+  certificatesEarned Int       @default(0)
+  currentStreak      Int       @default(0)
+  longestStreak      Int       @default(0)
+  lastActivityDate   DateTime?
+  date               DateTime  @default(now())
+  user               User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model CourseAnalytics {
+  id               String   @id @default(cuid())
+  courseId         String
+  totalEnrollments Int      @default(0)
+  completionRate   Decimal  @default(0) @db.Decimal(5, 2)
+  averageRating    Decimal? @db.Decimal(3, 2)
+  totalRevenue     Decimal  @default(0) @db.Decimal(10, 2)
+  averageWatchTime Int      @default(0)
+  dropOffRate      Decimal  @default(0) @db.Decimal(5, 2)
+  date             DateTime @default(now())
+  course           Course   @relation(fields: [courseId], references: [id])
+
+  @@unique([courseId, date])
+  @@index([courseId])
 }
 
 enum UserRole {
@@ -593,268 +683,6 @@ enum VideoProcessingStatus {
   FAILED
 }
 
-// Additional LMS Models
-
-// Reviews and Ratings
-model Review {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  
-  rating          Int // 1-5
-  review          String?   @db.Text
-  
-  // Moderation
-  isApproved      Boolean   @default(false)
-  moderatedAt     DateTime?
-  moderatedBy     String?
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@unique([userId, courseId])
-  @@index([courseId])
-  @@index([rating])
-  @@index([isApproved])
-}
-
-// Communication System
-model Message {
-  id              String    @id @default(cuid())
-  
-  senderId        String
-  sender          User      @relation("MessageSender", fields: [senderId], references: [id])
-  
-  receiverId      String
-  receiver        User      @relation("MessageReceiver", fields: [receiverId], references: [id])
-  
-  subject         String?
-  content         String    @db.Text
-  
-  isRead          Boolean   @default(false)
-  readAt          DateTime?
-  
-  // Attachments
-  attachments     String[]
-  
-  createdAt       DateTime  @default(now())
-  
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([isRead])
-}
-
-model ForumPost {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  
-  title           String
-  content         String    @db.Text
-  
-  // Moderation
-  isApproved      Boolean   @default(true)
-  isPinned        Boolean   @default(false)
-  
-  replies         ForumReply[]
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([courseId])
-  @@index([isApproved])
-}
-
-model ForumReply {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  postId          String
-  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  content         String    @db.Text
-  
-  // Threading
-  parentReplyId   String?
-  parentReply     ForumReply? @relation("ReplyThread", fields: [parentReplyId], references: [id])
-  childReplies    ForumReply[] @relation("ReplyThread")
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([postId])
-}
-
-// Payment & Billing
-model Payment {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  // Payment Details
-  amount          Decimal   @db.Decimal(10, 2)
-  currency        String    @default("USD")
-  status          PaymentStatus
-  
-  // Payment Provider (Paystack)
-  providerTransactionId String? @unique
-  providerReference String?
-  providerMetadata Json?
-  
-  // Related Records
-  enrollments     Enrollment[]
-  subscriptions   Subscription[]
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([status])
-  @@index([providerTransactionId])
-}
-
-model Subscription {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  plan            SubscriptionPlan
-  status          SubscriptionStatus
-  
-  // Billing
-  amount          Decimal   @db.Decimal(10, 2)
-  currency        String    @default("USD")
-  billingCycle    BillingCycle
-  
-  // Subscription Periods
-  startDate       DateTime
-  endDate         DateTime
-  cancelledAt     DateTime?
-  
-  // Payment
-  paymentId       String?
-  payment         Payment?  @relation(fields: [paymentId], references: [id])
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([status])
-}
-
-// Submissions for Assignments
-model Submission {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  assignmentId    String
-  assignment      Assignment @relation(fields: [assignmentId], references: [id])
-  
-  // Submission Content
-  content         String?   @db.Text
-  fileUrls        String[]
-  
-  // Grading
-  score           Int?
-  maxScore        Int
-  feedback        String?   @db.Text
-  gradedAt        DateTime?
-  gradedBy        String? // User ID of grader
-  
-  status          SubmissionStatus @default(SUBMITTED)
-  
-  submittedAt     DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  @@index([userId])
-  @@index([assignmentId])
-  @@index([status])
-}
-
-// Gamification & Achievements
-model Achievement {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  type            AchievementType
-  title           String
-  description     String
-  icon            String?
-  points          Int       @default(0)
-  
-  earnedAt        DateTime  @default(now())
-  
-  @@index([userId])
-  @@index([type])
-}
-
-// Analytics Models
-model UserAnalytics {
-  id              String    @id @default(cuid())
-  
-  userId          String
-  user            User      @relation(fields: [userId], references: [id])
-  
-  // Engagement Metrics
-  totalWatchTime  Int       @default(0) // in seconds
-  coursesEnrolled Int       @default(0)
-  coursesCompleted Int      @default(0)
-  certificatesEarned Int    @default(0)
-  
-  // Learning Streak
-  currentStreak   Int       @default(0)
-  longestStreak   Int       @default(0)
-  lastActivityDate DateTime?
-  
-  // Analytics Date
-  date            DateTime  @default(now())
-  
-  @@unique([userId, date])
-  @@index([userId])
-}
-
-model CourseAnalytics {
-  id              String    @id @default(cuid())
-  
-  courseId        String
-  course          Course    @relation(fields: [courseId], references: [id])
-  
-  // Enrollment Metrics
-  totalEnrollments Int      @default(0)
-  completionRate  Decimal   @db.Decimal(5, 2) @default(0)
-  averageRating   Decimal?  @db.Decimal(3, 2)
-  totalRevenue    Decimal   @db.Decimal(10, 2) @default(0)
-  
-  // Engagement Metrics
-  averageWatchTime Int      @default(0) // in seconds
-  dropOffRate     Decimal   @db.Decimal(5, 2) @default(0)
-  
-  // Analytics Date
-  date            DateTime  @default(now())
-  
-  @@unique([courseId, date])
-  @@index([courseId])
-}
-
-// Additional Enums
 enum CourseLevel {
   BEGINNER
   INTERMEDIATE

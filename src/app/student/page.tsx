@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -50,7 +50,7 @@ interface RecentActivity {
 }
 
 export default function StudentPage() {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<StudentStats>({
     enrolledCourses: 0,
@@ -65,15 +65,15 @@ export default function StudentPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (!loading) {
       if (!user) {
-        router.push('/sign-in');
+        router.push('/auth/login');
         return;
       }
       
       fetchStudentData();
     }
-  }, [user, isLoaded, router]);
+  }, [user, loading, router]);
 
   const fetchStudentData = async () => {
     try {
@@ -167,10 +167,27 @@ export default function StudentPage() {
     }
   };
 
-  if (!isLoaded || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 text-center">
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">Please log in to access your student dashboard.</p>
+          <button
+            onClick={() => router.push('/auth/login')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Sign In
+          </button>
+        </div>
       </div>
     );
   }
@@ -184,7 +201,7 @@ export default function StudentPage() {
         <div className="mb-8">
           <SectionHeading
             eyebrow="Student Dashboard"
-            title={`Welcome back, ${user?.firstName || 'Student'}!`}
+            title={`Welcome back, ${user?.profile?.name || user?.email || 'Student'}!`}
             description="Continue your learning journey and track your progress"
           />
         </div>

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import { 
   BookOpen, 
   Clock, 
@@ -74,7 +75,8 @@ interface UpcomingDeadline {
 }
 
 export default function StudentDashboard() {
-  const { user, isLoaded } = useUser()
+  const { user, loading: authLoading, isStudent } = useAuth()
+  const router = useRouter()
   const [stats, setStats] = useState<StudentStats | null>(null)
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
@@ -82,10 +84,20 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (isLoaded && user) {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/auth/login')
+        return
+      }
+      
+      if (!isStudent()) {
+        router.push('/unauthorized')
+        return
+      }
+      
       fetchDashboardData()
     }
-  }, [isLoaded, user])
+  }, [user, authLoading, isStudent, router])
 
   const fetchDashboardData = async () => {
     try {
@@ -142,7 +154,7 @@ export default function StudentDashboard() {
     }
   }
 
-  if (!isLoaded || loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto p-6">
         <div className="animate-pulse space-y-6">
@@ -175,7 +187,7 @@ export default function StudentDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Welcome back, {user?.firstName}! 👋
+            Welcome back, {user?.profile?.full_name?.split(' ')[0] || 'Student'}! 👋
           </h1>
           <p className="text-gray-600 mt-1">Continue your learning journey</p>
         </div>

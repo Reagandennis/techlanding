@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { defaultMetadata } from "./metadata";
 import Script from "next/script";
-import ClerkLayoutWrapper from "./ClerkLayoutWrapper";
+import { AuthProvider } from '@/contexts/AuthContext';
 import DebugAuth from "@/components/DebugAuth";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -26,11 +26,11 @@ export default function RootLayout({
         {/* ... (head content remains the same) */}
       </head>
       <body className={inter.className}>
-        <ClerkLayoutWrapper>
+        <AuthProvider>
           <Navigation />
           {children}
           <DebugAuth />
-        </ClerkLayoutWrapper>
+        </AuthProvider>
 
         <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
       </body>

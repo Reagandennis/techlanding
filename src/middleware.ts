@@ -1,158 +1,171 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define routes that require rate limiting
-const apiRouteMatcher = createRouteMatcher({ path: '/api/:path*' });
-const authRouteMatcher = createRouteMatcher({ path: '/api/auth/:path*' });
-const paymentRouteMatcher = createRouteMatcher({ path: '/api/(lms/enrollment/payment|certificates)/:path*' });
-
-// Store for rate limiting
-const rateLimit = new Map();
-
-// Security middleware that enhances the Clerk middleware
-const securityMiddleware = (req: NextRequest) => {
-  const res = NextResponse.next();
-  
-  // Add security headers
-  const headers = res.headers;
-  
-  // Security headers
-  headers.set('X-Content-Type-Options', 'nosniff');
-  headers.set('X-Frame-Options', 'DENY');
-  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  headers.set('X-XSS-Protection', '1; mode=block');
-  headers.set('X-DNS-Prefetch-Control', 'on');
-  
-  // Content Security Policy - adjust based on your needs
-  headers.set(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.paystack.co https://clerk.techgetafrica.com https://cloudinary.com https://*.cloudinary.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.cloudinary.com https://clerk.techgetafrica.com; font-src 'self' data:; connect-src 'self' https://api.cloudinary.com https://clerk.techgetafrica.com https://api.paystack.co; frame-src 'self' https://js.paystack.co https://clerk.techgetafrica.com;"
-  );
-  
-  // Add CSRF protection (relaxed for dev endpoints)
-  const requestMethod = req.method;
-  const isDevEndpoint = req.nextUrl.pathname.startsWith('/api/dev/');
-  
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(requestMethod) && !isDevEndpoint) {
-    const requestOrigin = req.headers.get('origin');
-    const host = req.headers.get('host');
-    
-    if (requestOrigin && host && !requestOrigin.includes(host) && !isAllowedOrigin(requestOrigin)) {
-      console.log('CSRF blocked:', { requestOrigin, host, pathname: req.nextUrl.pathname });
-      return new NextResponse('CSRF protection: Invalid origin', { status: 403 });
-    }
-  }
-  
-  // Rate limiting for API routes (relaxed for dev endpoints)
-  if (apiRouteMatcher(req) && !isDevEndpoint) {
-    const ip = req.ip || 'unknown';
-    const identifier = `${ip}:${req.nextUrl.pathname}`;
-    
-    // Different rate limits for different endpoints
-    let maxRequests = 60; // Default: 60 requests per minute
-    let windowMs = 60 * 1000; // 1 minute
-    
-    // Payment routes: stricter rate limits
-    if (paymentRouteMatcher(req)) {
-      maxRequests = 10; // 10 requests per minute
-    }
-    
-    // Auth routes: moderate rate limits
-    if (authRouteMatcher(req)) {
-      maxRequests = 30; // 30 requests per minute
-    }
-    
-    // Check rate limit
-    const now = Date.now();
-    const rateLimitInfo = rateLimit.get(identifier) || {
-      count: 0,
-      resetTime: now + windowMs,
-    };
-    
-    // Clean up expired entries
-    if (rateLimitInfo.resetTime <= now) {
-      rateLimitInfo.count = 0;
-      rateLimitInfo.resetTime = now + windowMs;
-    }
-    
-    // Increment counter
-    rateLimitInfo.count++;
-    rateLimit.set(identifier, rateLimitInfo);
-    
-    // Add rate limit headers
-    headers.set('X-RateLimit-Limit', maxRequests.toString());
-    headers.set('X-RateLimit-Remaining', Math.max(0, maxRequests - rateLimitInfo.count).toString());
-    headers.set('X-RateLimit-Reset', Math.ceil(rateLimitInfo.resetTime / 1000).toString());
-    
-    // Block if rate limit exceeded
-    if (rateLimitInfo.count > maxRequests) {
-      return new NextResponse('Too Many Requests', { 
-        status: 429,
-        headers: {
-          'Retry-After': Math.ceil((rateLimitInfo.resetTime - now) / 1000).toString(),
-          'X-RateLimit-Limit': maxRequests.toString(),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': Math.ceil(rateLimitInfo.resetTime / 1000).toString()
-        }
-      });
-    }
-  }
-  
-  // Revalidate map every hour to prevent memory leaks
-  if (rateLimit.size > 10000) { // If map gets too large
-    const now = Date.now();
-    for (const [key, value] of rateLimit.entries()) {
-      if (value.resetTime < now) {
-        rateLimit.delete(key);
-      }
-    }
-  }
-  
-  return res;
-};
-
-// Helper function to check if the origin is allowed
-function isAllowedOrigin(origin: string): boolean {
-  const allowedOrigins = [
-    'https://techgetafrica.com',
-    'https://www.techgetafrica.com',
-    'https://api.techgetafrica.com',
-    'https://staging.techgetafrica.com',
-    'http://localhost:3000',
-    'http://localhost:3001' // Added for development
-  ];
-  
-  return allowedOrigins.some(allowedOrigin => origin.startsWith(allowedOrigin));
+// Define role-based route protection
+const PROTECTED_ROUTES = {
+  ADMIN: [
+    '/admin',
+    '/lms/admin', 
+    '/api/admin',
+    '/api/lms/admin'
+  ],
+  INSTRUCTOR: [
+    '/instructor',
+    '/lms/instructor',
+    '/api/instructor',
+    '/api/lms/instructor'
+  ],
+  AUTHENTICATED: [
+    '/dashboard',
+    '/lms',
+    '/student',
+    '/profile'
+  ]
 }
 
-// Combine Clerk middleware with our security middleware
-export default function middleware(req: NextRequest) {
-  const isDevEndpoint = req.nextUrl.pathname.startsWith('/api/dev/');
-  
-  if (isDevEndpoint) {
-    console.log('=== Dev Endpoint Request ===');
-    console.log('Path:', req.nextUrl.pathname);
-    console.log('Method:', req.method);
-    console.log('Origin:', req.headers.get('origin'));
-    console.log('Host:', req.headers.get('host'));
+const PUBLIC_ROUTES = [
+  '/',
+  '/about',
+  '/contact',
+  '/blog',
+  '/courses',
+  '/programs',
+  '/resources',
+  '/careers',
+  '/privacy',
+  '/terms',
+  '/auth',
+  '/api/auth',
+  '/api/webhooks'
+];
+
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  const pathname = req.nextUrl.pathname
+
+  // Skip middleware for public routes and static files
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/public') ||
+    PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+  ) {
+    return res
   }
-  
-  // Apply security headers and rate limiting first
-  const securityResponse = securityMiddleware(req);
-  
-  // If security middleware blocked the request, return that response
-  if (securityResponse.status !== 200) {
-    if (isDevEndpoint) {
-      console.log('Security middleware blocked dev endpoint:', securityResponse.status);
+
+  // Add security headers
+  res.headers.set('X-Content-Type-Options', 'nosniff')
+  res.headers.set('X-Frame-Options', 'DENY')
+  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.headers.set('X-XSS-Protection', '1; mode=block')
+
+  try {
+    // Get the session
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    // If no session, redirect to login for protected routes
+    if (!session) {
+      if (isProtectedRoute(pathname)) {
+        const redirectUrl = req.nextUrl.clone()
+        redirectUrl.pathname = '/auth/login'
+        redirectUrl.searchParams.set('redirectTo', pathname)
+        return NextResponse.redirect(redirectUrl)
+      }
+      return res
     }
-    return securityResponse;
+
+    // Get user profile with role from database
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single()
+
+    const userRole = profile?.role || 'STUDENT'
+
+    // Check role-based access
+    if (requiresAdminAccess(pathname)) {
+      if (userRole !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+    }
+
+    if (requiresInstructorAccess(pathname)) {
+      if (!['INSTRUCTOR', 'ADMIN'].includes(userRole)) {
+        return NextResponse.redirect(new URL('/unauthorized', req.url))
+      }
+    }
+
+    if (requiresAuthentication(pathname)) {
+      if (!session) {
+        const redirectUrl = req.nextUrl.clone()
+        redirectUrl.pathname = '/auth/login'
+        redirectUrl.searchParams.set('redirectTo', pathname)
+        return NextResponse.redirect(redirectUrl)
+      }
+    }
+
+    // Redirect users to appropriate dashboard based on role
+    if (pathname === '/lms' || pathname === '/dashboard') {
+      switch (userRole) {
+        case 'ADMIN':
+          return NextResponse.redirect(new URL('/admin', req.url))
+        case 'INSTRUCTOR':
+          return NextResponse.redirect(new URL('/instructor', req.url))
+        case 'STUDENT':
+        default:
+          return NextResponse.redirect(new URL('/student', req.url))
+      }
+    }
+
+    // Add user role to headers for API routes
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-user-role', userRole)
+    requestHeaders.set('x-user-id', session.user.id)
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
+
+  } catch (error) {
+    console.error('Middleware error:', error)
+    // On error, redirect to login for protected routes
+    if (isProtectedRoute(pathname)) {
+      const redirectUrl = req.nextUrl.clone()
+      redirectUrl.pathname = '/auth/login'
+      redirectUrl.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(redirectUrl)
+    }
+    return res
   }
-  
-  // Otherwise, continue with Clerk middleware for authentication
-  return clerkMiddleware()(req);
+}
+
+function requiresAdminAccess(pathname: string): boolean {
+  return PROTECTED_ROUTES.ADMIN.some(route => pathname.startsWith(route))
+}
+
+function requiresInstructorAccess(pathname: string): boolean {
+  return PROTECTED_ROUTES.INSTRUCTOR.some(route => pathname.startsWith(route))
+}
+
+function requiresAuthentication(pathname: string): boolean {
+  return PROTECTED_ROUTES.AUTHENTICATED.some(route => pathname.startsWith(route))
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  const allProtectedRoutes = [
+    ...PROTECTED_ROUTES.ADMIN,
+    ...PROTECTED_ROUTES.INSTRUCTOR, 
+    ...PROTECTED_ROUTES.AUTHENTICATED
+  ]
+  return allProtectedRoutes.some(route => pathname.startsWith(route))
 }
 
 export const config = {
-  matcher: ['/((?!.*\..*|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)'],
 };

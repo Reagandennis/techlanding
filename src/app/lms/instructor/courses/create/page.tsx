@@ -2,11 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/contexts/AuthContext';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import LMSProtectedRoute from '@/components/LMSProtectedRoute';
 import LMSLayout from '@/components/LMSLayout';
 import FileUpload from '@/components/common/FileUpload';
 import { 
@@ -99,7 +98,7 @@ const STEPS = [
 ];
 
 export default function CreateCoursePage() {
-  const { user } = useUser();
+  const { user, loading: authLoading, isInstructor } = useAuth();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -190,10 +189,12 @@ export default function CreateCoursePage() {
       });
 
       if (response.ok) {
-        const course = await response.json();
-        router.push(`/lms/instructor/courses/${course.id}`);
+        const course = await response.json()
+        // Redirect to instructor dashboard since individual course pages don't exist yet
+        router.push('/lms/instructor')
       } else {
-        throw new Error('Failed to create course');
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create course')
       }
     } catch (error) {
       console.error('Error creating course:', error);
@@ -658,9 +659,27 @@ export default function CreateCoursePage() {
     </div>
   );
 
+  // Auth checks
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    router.push('/auth/login')
+    return null
+  }
+
+  if (!isInstructor()) {
+    router.push('/unauthorized')
+    return null
+  }
+
   return (
-    <LMSProtectedRoute requiredSection="instructor">
-      <LMSLayout currentSection="instructor">
+    <LMSLayout currentSection="instructor" userRole={user?.role}>
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -784,6 +803,5 @@ export default function CreateCoursePage() {
           </div>
         </div>
       </LMSLayout>
-    </LMSProtectedRoute>
   );
 }

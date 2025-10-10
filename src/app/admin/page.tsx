@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../../components/Navbar';
@@ -36,7 +36,7 @@ interface RecentUser {
 }
 
 export default function AdminPage() {
-  const { user, isLoaded } = useUser();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -51,15 +51,16 @@ export default function AdminPage() {
 
   // Check if user is admin
   useEffect(() => {
-    if (isLoaded) {
+    if (!loading) {
       if (!user) {
-        router.push('/sign-in');
+        router.push('/auth/login');
         return;
       }
       
+      // Allow access to this page for any authenticated user
       fetchAdminStats();
     }
-  }, [user, isLoaded, router]);
+  }, [user, loading, router]);
 
   const fetchAdminStats = async () => {
     try {
@@ -77,13 +78,14 @@ export default function AdminPage() {
     }
   };
 
-  if (!isLoaded || isLoading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-600"></div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50">

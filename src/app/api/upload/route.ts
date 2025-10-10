@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 import { 
   uploadToCloudinary, 
   uploadCourseThumbnail, 
@@ -10,9 +11,12 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
-    if (!userId) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -60,7 +64,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case 'user-avatar':
-        result = await uploadUserAvatar(buffer, userId);
+        result = await uploadUserAvatar(buffer, user.id);
         break;
 
       case 'general':
@@ -68,7 +72,7 @@ export async function POST(req: NextRequest) {
         result = await uploadToCloudinary(buffer, {
           folder: 'techlanding/general',
           resource_type: 'auto',
-          tags: ['general', userId],
+          tags: ['general', user.id],
         });
         break;
     }
@@ -100,9 +104,12 @@ export async function POST(req: NextRequest) {
 // Generate signed upload URL for client-side uploads
 export async function GET(req: NextRequest) {
   try {
-    const { userId } = auth();
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
     
-    if (!userId) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -115,7 +122,7 @@ export async function GET(req: NextRequest) {
 
     let folder: string;
     let resourceType: 'image' | 'video' | 'raw' | 'auto' = 'auto';
-    let tags: string[] = [userId];
+    let tags: string[] = [user.id];
 
     switch (uploadType) {
       case 'course-thumbnail':
