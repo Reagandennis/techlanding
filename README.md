@@ -263,7 +263,7 @@ Thanks to these amazing people who make TechGetAfrica possible:
 
 | Name | Role | GitHub |
 |------|------|--------|
-| Reagan Enoch | Founder & Lead Developer | [@reaganenoch](https://github.com/reaganenoch) |
+| Reagan Enoch | Founder & Lead Developer | [@reaganenoch]([https://github.com/reaganenoch](https://github.com/Reagandennis)) |
 | TechGetAfrica Team | Contributors | [@TechGetAfrica](https://github.com/TechGetAfrica) |
 
 **Want to contribute?** Fork and add yourself to this list!
