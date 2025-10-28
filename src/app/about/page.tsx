@@ -4,10 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Target, Users, Globe, Award, Rocket, Heart, MapPin } from 'lucide-react';
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import Footer from '../componets/Footer';
-import Navbar from '../componets/Navbar';
+import Button from '@/components/Button';
+import SectionHeading from '@/components/SectionHeading';
+
+
 
 const missionPoints = [
   {
@@ -139,9 +139,7 @@ const locations = [
 export default function AboutPage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-      <Navbar />
-      </header>
+      
 
       <main className="flex-grow">
         {/* Hero Section */}
@@ -596,7 +594,7 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <Footer />
+      
     </div>
   );
 }

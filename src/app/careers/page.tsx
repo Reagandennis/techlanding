@@ -4,10 +4,10 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Briefcase, MapPin, Clock, DollarSign, User, Search, ArrowRight, BookOpen, Users } from 'lucide-react';
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import Footer from '../componets/Footer';
-import Navbar from '../componets/Navbar';
+import Button from '../../components/Button';
+import SectionHeading from '../../components/SectionHeading';
+import Footer from '../../components/Footer';
+import Navbar from '../../components/Navbar';
 
 const featuredJobs = [
   {

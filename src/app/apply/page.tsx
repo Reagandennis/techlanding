@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Rocket, Building2, Users, Target, CheckCircle2, ArrowRight, Lightbulb, TrendingUp, Award } from 'lucide-react';
 
 // Import Components
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import Navbar from '../componets/Navbar';
-import Footer from '../componets/Footer';
+import Button from '../../components/Button';
+import SectionHeading from '../../components/SectionHeading';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 
 type BusinessType = 'startup' | 'established';
 
@@ -479,4 +479,4 @@ export default function AcceleratorApply() {
       <Footer />
     </div>
   );
-} 
+}

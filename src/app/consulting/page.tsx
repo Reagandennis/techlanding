@@ -2,10 +2,10 @@ import { FC } from 'react';
 import { Metadata } from 'next';
 import { Briefcase, Zap, Building, CheckCircle, Mail, Phone } from 'lucide-react';
 
-import Navbar from '../componets/Navbar';
-import Footer from '../componets/Footer';
-import SectionHeading from '../componets/SectionHeading';
-import Button from '../componets/Button';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import SectionHeading from '@/components/SectionHeading';
+import Button from '@/components/Button';
 import ContactForm from './ContactForm'; // I will create this component next.
 
 export const metadata: Metadata = {
@@ -56,9 +56,7 @@ const processSteps = [
 const ConsultingPage: FC = () => {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-white">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <Navbar />
-      </header>
+      
 
       <main className="flex-grow">
         {/* --- Hero Section --- */}

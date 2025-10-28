@@ -1,174 +1,78 @@
 'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Filter, Search, BookOpen, Clock, Signal } from 'lucide-react';
-import Button from '../componets/Button';
-import SectionHeading from '../componets/SectionHeading';
-import CourseCard from '../componets/CourseCard';
-import Footer from '../componets/Footer';
-import Navbar from '../componets/Navbar';
+import useSWR from 'swr'
+import Link from 'next/link'
 
-// Types from your CourseCard component
-type CourseCardProps = {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  level: string;
-  provider: string;
-  imageSrc: string;
-  imageAlt: string;
-  badges: string[];
-  href: string;
-};
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export default function CoursesPage() {
-  // Extended course list including featured courses and more
-  const allCourses: CourseCardProps[] = [
-    {
-      id: 'aws-cloud-practitioner',
-      title: 'AWS Certified Cloud Practitioner',
-      description: 'Master foundational AWS concepts and earn the industry-recognized AWS Cloud Practitioner certification.',
-      duration: '6 weeks',
-      level: 'Beginner',
-      provider: 'AWS',
-      imageSrc: '/images/courses/aws-cloud-practitioner.jpg',
-      imageAlt: 'AWS Cloud Practitioner Certification',
-      badges: ['High Demand', 'Entry Level'],
-      href: '/courses/aws-cloud-practitioner'
-    },
-    {
-      id: 'comptia-security-plus',
-      title: 'CompTIA Security+',
-      description: 'Gain essential cybersecurity skills with this globally recognized credential for security professionals.',
-      duration: '8 weeks',
-      level: 'Intermediate',
-      provider: 'CompTIA',
-      imageSrc: '/images/courses/comptia-security-plus.jpg',
-      imageAlt: 'CompTIA Security+ Certification',
-      badges: ['Top Rated', 'High Salary'],
-      href: '/courses/comptia-security-plus'
-    },
-    {
-      id: 'microsoft-azure-fundamentals',
-      title: 'Microsoft Azure Fundamentals',
-      description: 'Build cloud computing expertise with Microsoft Azure and prepare for the AZ-900 certification exam.',
-      duration: '4 weeks',
-      level: 'Beginner',
-      provider: 'Microsoft',
-      imageSrc: '/images/courses/azure-fundamentals.jpg',
-      imageAlt: 'Microsoft Azure Fundamentals Certification',
-      badges: ['Fast Track', 'Entry Level'],
-      href: '/courses/azure-fundamentals'
-    },
-    // Additional courses
-    {
-      id: 'google-cloud-associate',
-      title: 'Google Cloud Associate Engineer',
-      description: 'Learn to deploy applications, monitor operations, and manage enterprise solutions on Google Cloud.',
-      duration: '10 weeks',
-      level: 'Intermediate',
-      provider: 'Google',
-      imageSrc: '/images/courses/google-cloud-associate.jpg',
-      imageAlt: 'Google Cloud Associate Engineer Certification',
-      badges: ['High Demand', 'Cloud Computing'],
-      href: '/courses/google-cloud-associate'
-    },
-    {
-      id: 'cisco-ccna',
-      title: 'Cisco CCNA',
-      description: 'Master networking fundamentals, IP services, security fundamentals, automation and programmability.',
-      duration: '12 weeks',
-      level: 'Intermediate',
-      provider: 'Cisco',
-      imageSrc: '/images/courses/cisco-ccna.jpg',
-      imageAlt: 'Cisco CCNA Certification',
-      badges: ['Networking', 'Essential'],
-      href: '/courses/cisco-ccna'
-    },
-    {
-      id: 'kubernetes-administrator',
-      title: 'Certified Kubernetes Administrator',
-      description: 'Learn to deploy and manage Kubernetes clusters in production environments.',
-      duration: '8 weeks',
-      level: 'Advanced',
-      provider: 'CNCF',
-      imageSrc: '/images/courses/cka.jpg',
-      imageAlt: 'Certified Kubernetes Administrator',
-      badges: ['Cloud Native', 'DevOps'],
-      href: '/courses/kubernetes-administrator'
-    }
-  ];
+  const { data, error, isLoading, mutate } = useSWR('/api/courses?status=PUBLISHED', fetcher, {
+    refreshInterval: 30000,
+    revalidateOnFocus: true,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading courses...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="p-8 text-red-600">Failed to load courses.</div>
+  }
+
+  const courses = data?.courses ?? []
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-      <Navbar />
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">All Courses</h1>
+          <button
+            onClick={() => mutate()}
+            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+          >
+            Refresh
+          </button>
+        </div>
 
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-b from-gray-50 to-white pt-16 pb-20 px-4 sm:px-6 lg:pt-24 lg:pb-28 lg:px-8">
-          <div className="container mx-auto max-w-7xl">
-            <div className="text-center">
-              <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span className="block">Explore Our</span>
-                <span className="block text-red-600">Certification Courses</span>
-              </h1>
-              <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                Browse through our comprehensive collection of globally recognized tech certifications designed for African professionals.
-              </p>
-            </div>
-
-            {/* Search and Filter Bar */}
-            <div className="mt-10 max-w-3xl mx-auto">
-              <div className="flex gap-4 flex-wrap">
-                <div className="flex-1 min-w-[200px]">
-                  <div className="relative">
-                    <input
-                      type="search"
-                      placeholder="Search courses..."
-                      className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
-                    <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+        {courses.length === 0 ? (
+          <div className="bg-white rounded-lg p-10 text-center text-gray-600">No courses yet.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {courses.map((course: any) => (
+              <div key={course.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                {course.thumbnail ? (
+                  <img src={course.thumbnail} alt={course.title} className="h-40 w-full object-cover" />
+                ) : (
+                  <div className="h-40 w-full bg-gray-100" />
+                )}
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{course.title}</h3>
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-3">{course.description}</p>
+                  <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+                    <span>{course._count?.lessons ?? 0} lessons</span>
+                    <span>{course._count?.enrollments ?? 0} learners</span>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="font-medium text-gray-900">{course.price > 0 ? `$${course.price}` : 'Free'}</span>
+                    <Link href={`/lms/courses/${course.id}`} className="text-red-600 hover:text-red-700 font-medium">
+                      View
+                    </Link>
                   </div>
                 </div>
-                <Button variant="outline" className="flex items-center gap-2" href={'added'}>
-                  <Filter className="h-5 w-5" />
-                  Filter
-                </Button>
               </div>
-            </div>
+            ))}
           </div>
-        </section>
-
-        {/* Courses Grid Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {allCourses.map((course) => (
-                <CourseCard key={course.id} {...course} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-red-600 py-16">
-          <div className="container mx-auto max-w-4xl px-4 text-center">
-            <h2 className="text-3xl font-bold text-white">Ready to Get Started?</h2>
-            <p className="mt-4 text-red-100">Begin your journey towards professional certification today.</p>
-            <div className="mt-8">
-              <Button href="/register" variant="secondary">
-                Enroll Now
-              </Button>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <Footer />
+        )}
+      </div>
     </div>
-  );
+  )
 }
+
+

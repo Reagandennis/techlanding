@@ -5,10 +5,6 @@ const nextConfig = {
       ignoreDuringBuilds: true,
     },
     
-    // URL normalization options (moved from experimental)
-    skipTrailingSlashRedirect: true,
-    skipMiddlewareUrlNormalize: true,
-    
     // Disable TypeScript type checking during build
     typescript: {
       ignoreBuildErrors: true,
@@ -53,18 +49,72 @@ const nextConfig = {
       ];
     },
     
-    // Redirect configuration for domain consistency
+    // Redirect configuration for domain consistency and legacy URLs
     async redirects() {
       return [
         // These redirects ensure www.techgetafrica.com works with Clerk
         // In production, you might want to redirect www to non-www or vice versa
-        // For now, we'll allow both to work
+        
+        // Legacy route redirects for potential old URLs
+        {
+          source: '/our-services-for-hiring',
+          destination: '/recruitment',
+          permanent: true, // 301 redirect
+        },
+        {
+          source: '/tech-consulting-services',
+          destination: '/consulting',
+          permanent: true,
+        },
+        {
+          source: '/custom-software-development',
+          destination: '/development',
+          permanent: true,
+        },
+        // Redirect old program URLs to new structure
+        {
+          source: '/programs/accelerator-program',
+          destination: '/programs/accelerator',
+          permanent: true,
+        },
+        {
+          source: '/programs/accelarator',
+          destination: '/programs/accelerator',
+          permanent: true,
+        },
       ];
+    },
+    
+    // Image optimization
+    images: {
+      dangerouslyAllowSVG: true,
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'placehold.co',
+          port: '',
+          pathname: '/**',
+        },
+        {
+          protocol: 'https',
+          hostname: 'via.placeholder.com',
+          port: '',
+          pathname: '/**',
+        },
+        {
+          protocol: 'https',
+          hostname: 'images.unsplash.com',
+          port: '',
+          pathname: '/**',
+        }
+      ],
+      formats: ['image/webp', 'image/avif'],
     },
     
     // Skip failing page builds
     experimental: {
-      // No experimental features needed
+      // Optimize package imports for better performance
+      optimizePackageImports: ['lucide-react'],
     },
     
     // Add any specific page exclusions

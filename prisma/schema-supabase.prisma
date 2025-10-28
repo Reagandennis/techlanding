@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// User profiles - linked to Supabase auth.users
+model User {
+  id                 String             @id @db.Uuid
+  email              String             @unique
+  name               String?
+  role               UserRole           @default(STUDENT)
+  firstName          String?            @map("first_name")
+  lastName           String?            @map("last_name")
+  phone              String?
+  bio                String?
+  avatarUrl          String?            @map("avatar_url")
+  timezone           String?            @default("UTC")
+  language           String?            @default("en")
+  
+  // Social links
+  linkedinUrl        String?            @map("linkedin_url")
+  twitterUrl         String?            @map("twitter_url")
+  githubUrl          String?            @map("github_url")
+  websiteUrl         String?            @map("website_url")
+  
+  // Notification preferences
+  emailNotifications Boolean            @default(true) @map("email_notifications")
+  pushNotifications  Boolean            @default(true) @map("push_notifications")
+  marketingEmails    Boolean            @default(false) @map("marketing_emails")
+  
+  // Gamification
+  totalPoints        Int                @default(0) @map("total_points")
+  currentStreak      Int                @default(0) @map("current_streak")
+  longestStreak      Int                @default(0) @map("longest_streak")
+  lastActivityDate   DateTime?          @map("last_activity_date")
+  
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  
+  // Relations
+  createdCourses     Course[]           @relation("CourseInstructor")
+  enrollments        Enrollment[]
+  progress           Progress[]
+  
+  @@map("profiles")
+}
+
+model Course {
+  id                String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title             String
+  slug              String           @unique
+  description       String           @db.Text
+  shortDescription  String?          @map("short_description")
+  thumbnail         String?
+  trailerVideo      String?          @map("trailer_video")
+  
+  // Pricing
+  price             Decimal          @db.Decimal(10, 2) @default(0)
+  discountPrice     Decimal?         @db.Decimal(10, 2) @map("discount_price")
+  currency          String           @default("USD")
+  
+  // Course Status
+  status            CourseStatus     @default(DRAFT)
+  published         Boolean          @default(false)
+  publishedAt       DateTime?        @map("published_at")
+  
+  // Course Details
+  level             CourseLevel      @default(BEGINNER)
+  duration          Int?             // in minutes
+  language          String           @default("en")
+  
+  // SEO & Marketing
+  metaTitle         String?          @map("meta_title")
+  metaDescription   String?          @map("meta_description")
+  tags              String[]
+  
+  // Access Control
+  accessCode        String?          @unique @map("access_code")
+  
+  // Instructor
+  instructorId      String           @map("instructor_id") @db.Uuid
+  instructor        Profile          @relation("CourseInstructor", fields: [instructorId], references: [id])
+  
+  // Course Structure
+  modules           Module[]
+  lessons           Lesson[]
+  
+  // Learning Relations
+  enrollments       Enrollment[]
+  progress          Progress[]
+  
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  
+  @@map("courses")
+}
+
+model Module {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title         String
+  description   String?   @db.Text
+  order         Int
+  
+  courseId      String    @map("course_id") @db.Uuid
+  course        Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  lessons       Lesson[]
+  
+  // Requirements
+  prerequisites String[]
+  
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  @@map("modules")
+}
+
+model Lesson {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String
+  description     String?
+  content         String?   @db.Text
+  
+  // Media URLs
+  videoUrl        String?   @map("video_url")
+  audioUrl        String?   @map("audio_url")
+  documentUrl     String?   @map("document_url")
+  videoThumbnail  String?   @map("video_thumbnail")
+  videoTranscript String?   @db.Text @map("video_transcript")
+  
+  // Lesson properties
+  duration        Int?      // in seconds
+  order           Int
+  isPublished     Boolean   @default(false) @map("is_published")
+  isFree          Boolean   @default(false) @map("is_free")
+  
+  // Relations
+  courseId        String    @map("course_id") @db.Uuid
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  moduleId        String?   @map("module_id") @db.Uuid
+  module          Module?   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  
+  progress        Progress[]
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  @@map("lessons")
+}
+
+model Enrollment {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String           @map("user_id") @db.Uuid
+  courseId      String           @map("course_id") @db.Uuid
+  status        EnrollmentStatus @default(ACTIVE)
+  progress      Decimal          @default(0) @db.Decimal(5, 2)
+  enrolledAt    DateTime         @default(now()) @map("enrolled_at")
+  completedAt   DateTime?        @map("completed_at")
+  paymentStatus PaymentStatus    @default(PENDING) @map("payment_status")
+  paymentAmount Decimal?         @db.Decimal(10, 2) @map("payment_amount")
+  paidAt        DateTime?        @map("paid_at")
+  
+  course        Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user          Profile          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Progress {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  lessonId    String    @map("lesson_id") @db.Uuid
+  courseId    String    @map("course_id") @db.Uuid
+  isCompleted Boolean   @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  timeSpent   Int?      @map("time_spent")
+  
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user        Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("progress")
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+  
+  @@map("user_role")
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  PRIVATE
+  
+  @@map("course_status")
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+  
+  @@map("course_level")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  SUSPENDED
+  
+  @@map("enrollment_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  
+  @@map("payment_status")
+}
